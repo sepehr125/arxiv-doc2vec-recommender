@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>D3 Arxiv Explorer</title>
+    <link href="../static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+
+    <header>
+      <h1 class="text-center"><a href="{{SERVER_NAME}}">Arxiv Explorer</a></h1>
+    </header>
+
+    <div id="viz">
+      <svg class="main">
+      </svg>
+    </div>
+    
+    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="../static/jLouvain/jLouvain.js"></script>
+    <script type="text/javascript" src="../static/forceInABox/forceInABox.js"></script>
+
+    <script type="text/javascript">
+
+var data = [
+  {% for edge in data %}
+    {"source": "{{edge[0]}}", "target": "{{edge[1]}}", "weight": {{edge[2]}} }{% if not loop.last %},{%endif%}
+  {% endfor %}  
+]
+
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
+function createNetwork(edgelist) {
+  var nodeHash = {};
+  var nodes = [];
+  var edges = [];
+
+  edgelist.forEach(function (edge) {
+    if (!nodeHash[edge.source]) {
+      nodeHash[edge.source] = {id: edge.source, label: edge.source};
+      nodes.push(nodeHash[edge.source]);
+    }
+    if (!nodeHash[edge.target]) {
+      nodeHash[edge.target] = {id: edge.target, label: edge.target};
+      nodes.push(nodeHash[edge.target]);
+    }
+  });
+  createForceNetwork(nodes, edges);
+}
+
+function createForceNetwork(nodes, edges) {
+
+//create a network from an edgelist
+
+var colors = d3.scale.ordinal().domain([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]).range(["#996666", "#66CCCC", "#FFFF99", "#CC9999", "#666633", "#993300", "#999966", "#660000", "#996699", "#cc6633", "#ff9966", "#339999", "#6699cc", "#ffcc66", "#ff6600", "#00ccccc"]);
+
+var node_data = nodes.map(function (d) {return d.id});
+var edge_data = edges.map(function (d) {return {source: d.source.id, target: d.target.id, weight: 1}; });
+
+community = jLouvain().nodes(node_data).edges(edge_data);
+result  = community();
+
+nodes.forEach(function (node) {
+  node.module = result[node.id]
+});
+
+var force = d3.layout.forceInABox()
+    .charge(-120)
+    .linkDistance(50)
+    .linkStrengthInterCluster(0.01)
+    .gravityToFoci(0.2)
+    .gravityOverall(0.05)
+    .size([500, 500])
+    .groupBy(function (d) {return d.module});
+
+  force
+    .nodes(nodes)
+    .links(edges)
+    .on("tick", updateGraph);
+
+  var edgeEnter = d3.select("svg.main").selectAll("g.edge")
+  .data(edges, function (d) {return d.id})
+  .enter()
+  .append("g")
+  .attr("class", "edge");
+
+  edgeEnter
+  .append("line")
+  .style("stroke-width", "1px")
+  .style("stroke", "black")
+  .style("pointer-events", "none");
+
+  var nodeEnter = d3.select("svg.main")
+  .selectAll("g.node")
+  .data(nodes, function (d) {return d.id})
+  .enter()
+  .append("g")
+  .attr("class", "node")
+  .call(force.drag());
+
+  nodeEnter.append("circle")
+  .attr("r", 8)
+  .style("fill", function (d) {return colors(d.module)})
+  .style("stroke", "black")
+  .style("stroke-width", "1px")
+
+  nodeEnter.append("text")
+  .style("text-anchor", "middle")
+  .attr("y", 3)
+  .style("stroke-width", "1px")
+  .style("stroke-opacity", 0.75)
+  .style("stroke", "white")
+  .style("font-size", "8px")
+  .text(function (d) {return d.id})
+  .style("pointer-events", "none")
+
+  nodeEnter.append("text")
+  .style("text-anchor", "middle")
+  .attr("y", 3)
+  .style("font-size", "8px")
+  .text(function (d) {return d.id})
+  .style("pointer-events", "none")
+
+  force.start();
+
+
+function updateGraph(e) {
+  force.onTick(e);
+
+  d3.selectAll("line")
+    .attr("x1", function(d) { return d.source.x; })
+    .attr("y1", function(d) { return d.source.y; })
+    .attr("x2", function(d) { return d.target.x; })
+    .attr("y2", function(d) { return d.target.y; });
+
+  d3.selectAll("g.node")
+    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+}
+
+}
+
+createNetwork(data);
+
+    </script>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../static/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../static/bootstrap/js/bootstrap3-typeahead.min.js"></script>
+
+
+  </body>
+</html>
