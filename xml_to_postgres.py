@@ -1,7 +1,10 @@
+import sys
 import psycopg2
 import os
 from xml.etree import ElementTree as ET
 from datetime import datetime
+from time import time
+import argparse
 
 """
 HELPER FUNCTIONS
@@ -66,8 +69,8 @@ This just combines the above helper functions
 that fetch specific fields from xml.
 Returns tuple of the needed fields
 """
-def get_fields_from_xml(path_to_xml_file):
-    tree = ET.parse(path_to_xml_file)
+def make_row(f_path):
+    tree = ET.parse(f_path)
     root = tree.getroot()
     # get (title, authors, subject, abstract, date, arxiv_id)
     title = get_title(root)
@@ -82,11 +85,12 @@ def get_fields_from_xml(path_to_xml_file):
 """
 Given a single xml file, inserts it into database
 """
-def insert_xml_into_postgres(path_to_xml_file):
-    with psycopg2.connect(dbname='arxiv') as conn:
+def parse_and_insert_xml(f_path, dbname='arxiv'):
+    with psycopg2.connect(dbname=dbname) as conn:
         with conn.cursor() as cur:
+            # TODO: do batches of files
             query_template = "INSERT INTO articles (title, authors, subject, abstract, last_submitted, arxiv_id) VALUES (%s, %s, %s, %s, %s, %s)"
-            values = get_fields_from_xml(path_to_xml_file)
+            values = make_row(f_path)
             insert_query = cur.mogrify(query_template, values)
             cur.execute(insert_query)
             conn.commit()
@@ -94,25 +98,38 @@ def insert_xml_into_postgres(path_to_xml_file):
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser(description='Parses xml files for fields and inserts into database')
+    parser.add_argument('data_dir', help="Path to data folder")
+    parser.add_argument('dbname', help="Name of postgres database")
+    args = parser.parse_args()
+
+    print(args.data_dir)
+    print(args.dbname)
+
     # create the table if needed. default dbase name is arxiv. 
-    # TODO 
-    # add argparse to allow one to specify dbase name
-    # add error reporting if can't connect to db etc.
-    create_schema()
+    create_schema(dbname=args.dbname)
 
-    data_dir = '/Users/Sepehr/dev/data-projects/arxiv-doc2vec-recommender/data/'
-    filenames = os.listdir(data_dir)
+    # data_dir = '/Users/Sepehr/dev/data-projects/arxiv-doc2vec-recommender/data/'
+    filenames = os.listdir(args.data_dir)
 
-    # untested:
+
+    print("Embarking on processing %d files."%len(filenames))
+    wins, fails = 0, 0
+    init_time = time()
     for fname in filenames:
-        path_to_xml_file = data_dir + fname
+        f_path = args.data_dir + fname
+        # print(f_path)
         try:
-            insert_xml_into_postgres(path_to_xml_file)
+            parse_and_insert_xml(f_path, args.dbname)
+            wins += 1
         except:
-            continue
+            fails += 1
+            pass
+        if (wins+fails)%500==0:
+            # print("Last attempt: #%d -- %s"%((wins+fails), fname))
+            print("Inserted %d documents. %d attempts failed"%(wins, fails))
+            print("Seconds elapsed: %s"%(time() - init_time))
 
-
-
-
-
-
+    print("Total documents inserted: %d"%(wins+fails))
+    print("Documents failed: %d"%fails)
+    print("Total time elapsed %s seconds"%(time() - init_time))
