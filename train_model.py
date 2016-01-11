@@ -10,7 +10,7 @@ import argparse
 class DocIterator(object):
 
     def __init__(self, conn):
-        self.conn = conn 
+        self.conn = conn
 
     def __iter__(self):
         with conn.cursor() as cur:
@@ -23,7 +23,7 @@ class DocIterator(object):
 
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser(description='trains model based on corpus in psql')
     parser.add_argument('dbname', help="Name of postgres database")
     parser.add_argument('model_name', help="Filename to save the model to")
