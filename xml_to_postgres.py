@@ -49,7 +49,6 @@ def get_date(root):
 def create_schema(dbname='arxiv'):
     conn = psycopg2.connect(dbname=dbname)
     cur = conn.cursor()
-    
     sql_create = """CREATE TABLE IF NOT EXISTS articles (
         index serial PRIMARY KEY,
         title text,
@@ -111,7 +110,6 @@ if __name__ == '__main__':
 
     # data_dir = '/Users/Sepehr/dev/data-projects/arxiv-doc2vec-recommender/data/'
     filenames = os.listdir(args.data_dir)
-
 
     print("Embarking on processing %d files."%len(filenames))
     wins, fails = 0, 0
