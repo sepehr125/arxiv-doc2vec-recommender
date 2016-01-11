@@ -1,3 +1,4 @@
+from time import time
 import psycopg2
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from gensim.utils import simple_preprocess
@@ -14,10 +15,10 @@ class DocIterator(object):
     def __iter__(self):
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM articles;")
-            for idx, title, authors, subject, abstract, pubdate, arxid in cur:
+            for index, title, authors, subject, abstract, pubdate, arxid in cur:
                 body = title + '. ' + abstract
                 words = re.findall(r"[\w']+|[.,!?;]", body)
-                tags = [arxid]
+                tags = [index]
                 yield TaggedDocument(words, tags)
 
 
@@ -34,4 +35,7 @@ if __name__ == '__main__':
         doc_iterator = DocIterator(conn)
         model = Doc2Vec(documents=doc_iterator, workers=n_workers)
 
+    t_i = time()
     model.save('models/' + args.model_name)
+    print("Time elapsed: %s seconds"%(time() - t_i))
+    print("Model can be found at models/%s"%args.model_name)

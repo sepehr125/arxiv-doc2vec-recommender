@@ -1,9 +1,10 @@
+from collections import namedtuple
+import psycopg2
 from flask import Flask
 from flask import render_template
 from flask import request
 from gensim.models import Doc2Vec
 from gensim.similarities.docsim import Similarity
-from pymongo.mongo_client import MongoClient
 import re
 
 app = Flask(__name__)
@@ -12,13 +13,15 @@ app = Flask(__name__)
 """
 HELPERS
 """
+def get_record(key):
+    
+
+
 def get_similars(key, num_similars=10):
     docvecs_array = model.docvecs
     original_vector = docvecs_array[key]
     similars = docvecs_array.most_similar(positive=[original_vector], topn=num_similars)[1:]
-    output = []
-    for sim_id, sim_degree in similars:
-        output.append(collection.find_one({'id': sim_id}))
+    cur.mogrify("SELECT * FROM articles WHERE arxid IN ()", similars)
     return output
 
 
@@ -37,9 +40,14 @@ ROUTES
 """
 @app.route("/")
 def home():
-    article = collection.find_one()
-    similars = get_similars(article['id'])
+    cur.execute("SELECT * FROM articles LIMIT 1")
+    results = [Article._make(row) for row in cur]
     return render_template("main.html", article=article, similars=similars)
+
+@app.route("/namedtuple")
+def tuple_test():
+    nt = Article._make([1, "test_title", "authors", "subject", "abstract", "pubdate", "arxid"])
+    return render_template("test.html", article=nt)
 
 @app.route("/like/<criteria>/<path:key>")
 def like(criteria, key):
@@ -81,19 +89,17 @@ def search(q):
     similars = model.most_similar(positive=[q_vec])
     return str(similars)
 
-    # regx = search_regex(q)
-    # matches = collection.find({"title": regx}, limit=10)
-    # match_list = [match for match in matches]
-    # return render_template("search.html", results=list(matches), query=q)
-    
 
 if __name__ == '__main__':
     
     # load model:
-    model = Doc2Vec.load('models/doc2vec_22k_cat_in_abstract')
+    model = Doc2Vec.load('models/psql_model_1')
 
-    # connect to db:
-    client = MongoClient()
-    collection = client.arxiv.articles
+    # help read articles:
+    fields = ["idx", "title", "authors", "subject", "abstract", "pubdate", "arxid"]
+    Article = namedtuple("Article", fields)
 
-    app.run(debug=True)
+    # run app in db connection context
+    with psycopg2.connect(dbname='arxiv') as conn:
+        with conn.cursor() as cur:
+            app.run(debug=True)

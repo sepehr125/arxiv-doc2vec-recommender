@@ -21,7 +21,7 @@
       <div class="col-md-6">
         <h2>
           {{ article.title }}
-          <small>[{{article.arxiv_primary_category.term}}]</small>
+          <small>[{{article.subject}}]</small>
         </h2>
         <h3><a href='/like/author/{{ article.author }}'>{{ article.author }}</a></h3>
         <p>{{ article.summary }}</p>
@@ -34,7 +34,7 @@
           {% for s in similars %}
           <li> 
             <a href="/like/id/{{ get_slug(s.id) }}">{{s.title}}</a>
-            <small>[{{s.arxiv_primary_category.term}}]</small>
+            <small>[{{s.subject}}]</small>
           </li>
           {% endfor %}
         </ul>
