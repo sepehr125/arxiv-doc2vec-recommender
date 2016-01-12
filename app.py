@@ -6,6 +6,7 @@ from flask import request
 from gensim.models import Doc2Vec
 from gensim.similarities.docsim import Similarity
 import re
+import argparse
 
 app = Flask(__name__)
 
@@ -26,8 +27,12 @@ def home():
 
 if __name__ == '__main__':
     
+    parser = argparse.ArgumentParser(description='Fire up flask server with appropriate model')
+    parser.add_argument('model_name', help="Name of model file")
+    args = parser.parse_args()
+
     # load model:
-    model = Doc2Vec.load('models/doc2vec_2k_primary_key')
+    model = Doc2Vec.load('models/' + args.model_name)
 
     # help read articles:
     fields = ["idx", "title", "authors", "subject", "abstract", "pubdate", "arxid"]
