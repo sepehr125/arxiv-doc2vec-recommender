@@ -16,16 +16,39 @@
   <body>
     <header>
       <h1 class="text-center"><a href="#">SciExplore</a></h1>
-      <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseExample" aria-expanded="false" aria-controls="collapseExample">Search</a>
-      <div class="collapse" id="collapseExample">
-        Search field
-      </div>
     </header>
     <main>
+      <div class="col-md-12">
+        <a class="btn btn-primary" role="button" data-toggle="collapse" 
+          href="#collapseSearch" aria-expanded="false" aria-controls="collapseSearch">Search</a>
+        <div class="collapse" id="collapseSearch">
+          <form method="POST" action="search">
+            <input type="text" />
+          </form>
+        </div>
+      </div>
       <div class="col-md-6">
-      {% for subject in subjects %}
-        {{subject}} <br>
-      {% endfor %}
+      <ul id="subjects">
+        {% for parent, children in subjects.items() %}
+        <li class="parent">
+          {% if children|length == 0 %}
+          <a href="/?cat={{parent}}">
+          {% endif %}
+            {{ parent }}
+          {% if children|length == 0 %}
+          </a>
+          {% endif %}
+          </li>
+          {% if children|length > 0 %}
+            <ul class="children">
+              {% for child in children %}
+                <li><a href="/?cat={{parent}}%20{{child}}">{{ child }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endfor %}
+
+      </ul>
       </div>
 
       <div class="col-md-6">

@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import namedtuple, defaultdict, OrderedDict
 import psycopg2
 from flask import Flask
 from flask import render_template
@@ -17,7 +17,15 @@ def get_subjects():
     # query = "SELECT COUNT(*) FROM (SELECT DISTINCT subject FROM articles) AS temp;"
     cur.execute(query)
     subjects = sorted([s[0] for s in cur.fetchall()])
-    return subjects
+    d = defaultdict(list)
+    for s in subjects:
+        parent_child = s.split(' - ')
+        if len(parent_child) == 2:
+            d[parent_child[0]].append(parent_child[1])
+        elif len(parent_child) == 1:
+            d[parent_child[0]] = []
+
+    return OrderedDict(sorted(d.items()))
 
 
 @app.route('/')
@@ -28,11 +36,11 @@ def home():
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Fire up flask server with appropriate model')
-    parser.add_argument('model_name', help="Name of model file")
+    parser.add_argument('model_path', help="Name of model file")
     args = parser.parse_args()
 
     # load model:
-    model = Doc2Vec.load('models/' + args.model_name)
+    model = Doc2Vec.load('models/' + args.model_path)
 
     # help read articles:
     fields = ["idx", "title", "authors", "subject", "abstract", "pubdate", "arxid"]

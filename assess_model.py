@@ -1,43 +1,32 @@
-from gensim.models import Doc2Vec
-from pymongo.mongo_client import MongoClient
+from collections import namedtuple
+import psycopg2
+from gensim.models.doc2vec import Doc2Vec
+import argparse
 
-def 
-model = Doc2Vec.load(path_to_model)
-docvecs_array = model.docvecs
+if __name__ == '__main__':
 
-# connect to mongo
-client = MongoClient()
-collection = client.arxiv.articles
+    parser = argparse.ArgumentParser(description="tests model's ability to predict tags of unseen documents")
+    parser.add_argument('dbname', help="Name of postgres database")
+    parser.add_argument('path_to_model', help="Filename to save the model to")
+    args = parser.parse_args()
 
-def get_cat(arxid, collection, parent_only=False):
-    res = collection.find_one({'id': arxid}, ['arxiv_primary_category'])
-    cat = res['arxiv_primary_category']['term']
-    if parent_only:
-        return cat.split(".")[0]
-    else:
-        return cat
+    model = Doc2Vec.load(path_to_model)
+    docvecs_array = model.docvecs
 
+    with psycopg2.connect(dbname='arxiv') as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM articles")        
+            col_names = [col.name for col in cur.description]
+            Article = namedtuple("Article", col_names)
+            hits = 0
+            for row in cur:
+                article = Article(*row)
+                relateds = model.docvecs.most_similar(positive=[article.index], topn=2)
+                related_ids = tuple([idx for idx, similarity in relateds])
+                with conn.cursor() as newcur:
+                    newcur.execute("SELECT subject FROM articles WHERE index in %s"%(related_ids, ))
+                    cats = newcur.fetchall()
+                    new_hits = [1 if cat==article.subject else 0 for cat in cats]
+                    hits += sum(new_hits)
 
-hit = 0
-parent_hit = 0
-cats = []
-for item in collection.find():
-    item_vec = docvecs_array[item['id']]
-    # relateds is list of (id, similarity) pairs, skip first b/c self-similarity == 1
-    relateds = docvecs_array.most_similar(positive=[item_vec], topn=3)[1:]
-    original_cat = get_cat(item['id'], collection)
-    related_cats = [get_cat(i, collection) for i, sim in relateds]
-    # if categories are the same
-    if original_cat in related_cats:
-        hit += 1
-    # if parent cats are the same
-    if original_cat.split('.')[0] in [cat.split('.')[0] for cat in related_cats]:
-        parent_hit += 1
-    # to get a distribution of categories in the corpus:
-    cats.append(original_cat)
-
-print("Percent of top recommendations in same category:")
-print(hit / len(cats) * 100)
-
-print("Percent of top recommendations in same parent category:")
-print(parent_hit / len(cats) * 100)
+    print(hits)
