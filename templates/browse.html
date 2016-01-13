@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block main %}
+  <ul id="subjects">
+    {% for subject in subjects %}
+      <li><a href="/?cat={{subject}}">{{ subject }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
+<!--     
+{#% for parent, children in subjects.items() %#}
+    <li class="parent">
+      {#% if children|length == 0 %#}
+      <a href="/?cat={{parent}}">
+      {#% endif %#}
+        {{ parent }}
+      {#% if children|length == 0 %#}
+      </a>
+      {#% endif %#}
+      </li>
+      {#% if children|length > 0 %#}
+        <ul class="children">
+          {#% for child in children %#}
+            <li><a href="/?cat={{parent}}%20{{child}}">{{ child }}</a></li>
+          {#% endfor %#}
+        </ul>
+      {#% endif %#}
+    {#% endfor %#}
+ -->    

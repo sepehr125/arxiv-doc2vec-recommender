@@ -13,7 +13,7 @@ if __name__ == '__main__':
     model = Doc2Vec.load(path_to_model)
     docvecs_array = model.docvecs
 
-    with psycopg2.connect(dbname='arxiv') as conn:
+    with psycopg2.connect(dbname=args.dbname) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM articles")        
             col_names = [col.name for col in cur.description]

@@ -17,21 +17,29 @@ def get_subjects():
     # query = "SELECT COUNT(*) FROM (SELECT DISTINCT subject FROM articles) AS temp;"
     cur.execute(query)
     subjects = sorted([s[0] for s in cur.fetchall()])
-    d = defaultdict(list)
-    for s in subjects:
-        parent_child = s.split(' - ')
-        if len(parent_child) == 2:
-            d[parent_child[0]].append(parent_child[1])
-        elif len(parent_child) == 1:
-            d[parent_child[0]] = []
+    return subjects
+    # d = defaultdict(list)
+    # for s in subjects:
+    #     parent_child = s.split(' - ')
+    #     if len(parent_child) == 2:
+    #         d[parent_child[0]].append(parent_child[1])
+    #     elif len(parent_child) == 1:
+    #         d[parent_child[0]] = []
 
-    return OrderedDict(sorted(d.items()))
+    # return OrderedDict(sorted(d.items()))
 
+
+@app.route('/subjects')
+def browse_subjects():
+    return render_template("browse.html", subjects=get_subjects())
 
 @app.route('/')
 def home():
-    subjects = get_subjects()
-    return render_template("main.html", subjects=subjects)
+    
+    # like = request.args.get('like', '')
+    # unlike = request.args.get('unlike', '')
+    # return like.split(',')
+    return render_template("main.html", subjects=get_subjects())
 
 if __name__ == '__main__':
     
@@ -40,7 +48,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # load model:
-    model = Doc2Vec.load('models/' + args.model_path)
+    model = Doc2Vec.load(args.model_path)
 
     # help read articles:
     fields = ["idx", "title", "authors", "subject", "abstract", "pubdate", "arxid"]
