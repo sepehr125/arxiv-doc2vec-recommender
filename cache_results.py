@@ -42,3 +42,4 @@ if __name__ == '__main__':
                 index_A = article_A[0]
                 relateds = model.docvecs.most_similar(positive=[index_A], topn=int(args.n_similars))
                 insert_relation(conn, args.table, index_A, relateds)
+                if cur.rownumber%1000==0: print("row ", cur.rownumber)
