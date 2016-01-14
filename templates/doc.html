@@ -3,7 +3,7 @@
 {% block main %}
 
 <div class="col-md-6 doc">
-	<h2>{{doc.title}} <small class="bg-info">[{{doc.subject}}]</small></h2>
+	<h2 class="">{{doc.title}} <small class="bg-info">[{{doc.subject}}]</small></h2>
 	<p>{{doc.abstract}}</p>
 </div>
 
@@ -24,4 +24,13 @@
 
 
 {% block scripts %}
+<script type="text/javascript">
+  window.MathJax = {
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  };
+</script>
+<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 {% endblock %}
