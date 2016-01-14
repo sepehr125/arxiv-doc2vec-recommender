@@ -1,4 +1,4 @@
-from collections import namedtuple, defaultdict, OrderedDict
+from collections import namedtuple
 import psycopg2
 from flask import Flask
 from flask import render_template
@@ -28,18 +28,38 @@ def get_subjects():
 
     # return OrderedDict(sorted(d.items()))
 
+def get_articles(indices):
+    with conn.cursor() as cur:
+        if type(indices) == list:
+            query = cur.mogrify("SELECT * FROM articles WHERE index IN %s", (tuple(indices),))
+            cur.execute(query)
+            col_names = [col.name for col in cur.description]
+            Article = namedtuple("Article", col_names)
+            articles = [Article(*row) for row in cur.fetchall()]
+            return articles
 
 @app.route('/subjects')
 def browse_subjects():
     return render_template("browse.html", subjects=get_subjects())
 
+@app.route('/doc/<doc_id>')
+def find_similars(doc_id):
+    doc = get_articles(list(doc_id)).pop()
+    sims = model.docvecs.most_similar(int(doc_id))
+    sim_indices = [int(index) for index, similarity in sims]
+    sim_articles = get_articles(sim_indices)
+    return render_template("doc.html", doc=doc, sims=sim_articles)
+
+
 @app.route('/')
 def home():
     
-    # like = request.args.get('like', '')
-    # unlike = request.args.get('unlike', '')
-    # return like.split(',')
-    return render_template("main.html", subjects=get_subjects())
+    # like = request.args.get('like', '').split(',')
+    # unlike = request.args.get('unlike', '').split(',')
+    # in_subject = request.args.get('in', '').split(',')
+    # not_in_subject = request.args.get('not_in', '').split(',')
+
+    return render_template("main.html")
 
 if __name__ == '__main__':
     
@@ -56,5 +76,4 @@ if __name__ == '__main__':
 
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
-        with conn.cursor() as cur:
-            app.run(debug=True)
+        app.run(debug=True)

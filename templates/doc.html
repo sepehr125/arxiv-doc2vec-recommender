@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+<div class="col-md-6 doc">
+	<h2>{{doc.title}} <small class="bg-info">[{{doc.subject}}]</small></h2>
+	<p>{{doc.abstract}}</p>
+</div>
+
+<div class="col-md-6">
+	<h3 class="text-center">Similar Articles:</h3>
+	<ul class="similars">
+	{% for sim in sims %}
+		<li>
+			<a href="/doc/{{ sim.index }}">
+			{{ sim.title }}</a>
+			<small class="bg-info">[{{sim.subject}}]</small>
+			</a>
+		</li>
+	{% endfor %}
+	</ul>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

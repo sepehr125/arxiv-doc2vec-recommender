@@ -2,29 +2,32 @@
 
 {% block main %}
 <div class="col-md-6">
-  <a class="btn btn-primary" role="button" data-toggle="collapse" 
-    href="#collapseBrowse" aria-expanded="false" aria-controls="collapseBrowse">Browse</a>
-  <div class="collapse" id="collapseBrowse">
-    <ul id="subjects">
-      {% for parent, children in subjects.items() %}
-      <li class="parent">
-        {% if children|length == 0 %}
-        <a href="/?cat={{parent}}">
-        {% endif %}
-          {{ parent }}
-        {% if children|length == 0 %}
-        </a>
-        {% endif %}
-        </li>
-        {% if children|length > 0 %}
-          <ul class="children">
-            {% for child in children %}
-              <li><a href="/?cat={{parent}}%20{{child}}">{{ child }}</a></li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-      {% endfor %}
-      </ul>
-    </div>
+  {% if likes|length > 0 %}
+    <ul class="likes">
+    {% for article in likes %}
+      <li>{{article[1]}}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if unlikes|length > 0 %}
+    <ul class="unlikes">
+    {% for article in unlikes %}
+      <li>{{article[1]}}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+
 </div>
+
+<div class="col-md-6">
+  {% if similars|length > 0 %}
+    <ul class="similars">
+    {% for article in similars %}
+      <li>{{article}}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+
 {% endblock %}
