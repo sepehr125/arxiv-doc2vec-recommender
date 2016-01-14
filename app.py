@@ -4,7 +4,6 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from gensim.models import Doc2Vec
-from gensim.similarities.docsim import Similarity
 import re
 import argparse
 
@@ -13,6 +12,7 @@ app = Flask(__name__)
 
 """Helpers"""
 def get_subjects():
+    cur = conn.cursor()
     query = "SELECT DISTINCT subject FROM articles;"
     # query = "SELECT COUNT(*) FROM (SELECT DISTINCT subject FROM articles) AS temp;"
     cur.execute(query)
@@ -30,13 +30,21 @@ def get_subjects():
 
 def get_articles(indices):
     with conn.cursor() as cur:
-        if type(indices) == list:
-            query = cur.mogrify("SELECT * FROM articles WHERE index IN %s", (tuple(indices),))
-            cur.execute(query)
-            col_names = [col.name for col in cur.description]
-            Article = namedtuple("Article", col_names)
-            articles = [Article(*row) for row in cur.fetchall()]
-            return articles
+        query = cur.mogrify("SELECT * FROM articles WHERE index IN %s", (tuple(indices),))
+        cur.execute(query)
+        col_names = [col.name for col in cur.description]
+        Article = namedtuple("Article", col_names)
+        articles = [Article(*row) for row in cur.fetchall()]
+        return articles
+
+def get_articles_by_subject(subject):
+    with conn.cursor() as cur:
+        query = "SELECT * FROM articles WHERE subject='" + subject + "'"
+        cur.execute(query)
+        col_names = [col.name for col in cur.description]
+        Article = namedtuple("Article", col_names)
+        articles = [Article(*row) for row in cur.fetchall()]
+        return articles
 
 def get_article(index):
     with conn.cursor() as cur:
@@ -47,27 +55,26 @@ def get_article(index):
         article = [Article(*row) for row in cur.fetchall()][0]
         return article
 
-@app.route('/subjects')
-def browse_subjects():
-    return render_template("browse.html", subjects=get_subjects())
+@app.route('/subjects/')
+@app.route('/subjects/<subject>')
+def browse_subjects(subject=None):
+    if subject is None:
+        return render_template("browse.html", subjects=get_subjects())
+    else:
+        articles = get_articles_by_subject(subject)
+        return render_template("articles.html", articles=articles, subject=subject)
 
-@app.route('/doc/<doc_id>')
-def find_similars(doc_id):
-    doc = get_article(doc_id)
-    sims = model.docvecs.most_similar(int(doc_id))
-    sim_indices = [int(index) for index, similarity in sims]
-    sim_articles = get_articles(sim_indices)
+@app.route('/article/<article_id>')
+def find_similars(article_id=None):
+    doc = get_article(article_id)
+    sims = model.docvecs.most_similar(int(article_id)) # [(id, similarity), ...]
+    d = {int(index): [similarity] for index, similarity in sims}
+    sim_articles = get_articles(list(d.keys()))
     return render_template("doc.html", doc=doc, sims=sim_articles)
 
 
 @app.route('/')
 def home():
-    
-    # like = request.args.get('like', '').split(',')
-    # unlike = request.args.get('unlike', '').split(',')
-    # in_subject = request.args.get('in', '').split(',')
-    # not_in_subject = request.args.get('not_in', '').split(',')
-
     return render_template("main.html")
 
 if __name__ == '__main__':
