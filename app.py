@@ -76,4 +76,4 @@ if __name__ == '__main__':
 
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
-        app.run(debug=True)
+        app.run(debug=True, port=5000, host='0.0.0.0')
