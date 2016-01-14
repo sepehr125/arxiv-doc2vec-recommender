@@ -38,13 +38,22 @@ def get_articles(indices):
             articles = [Article(*row) for row in cur.fetchall()]
             return articles
 
+def get_article(index):
+    with conn.cursor() as cur:
+        query = "SELECT * FROM articles WHERE index="+str(index)
+        cur.execute(query)
+        col_names = [col.name for col in cur.description]
+        Article = namedtuple("Article", col_names)
+        article = [Article(*row) for row in cur.fetchall()][0]
+        return article
+
 @app.route('/subjects')
 def browse_subjects():
     return render_template("browse.html", subjects=get_subjects())
 
 @app.route('/doc/<doc_id>')
 def find_similars(doc_id):
-    doc = get_articles(list(doc_id)).pop()
+    doc = get_article(doc_id)
     sims = model.docvecs.most_similar(int(doc_id))
     sim_indices = [int(index) for index, similarity in sims]
     sim_articles = get_articles(sim_indices)
