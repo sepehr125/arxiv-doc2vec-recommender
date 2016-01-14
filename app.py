@@ -79,10 +79,6 @@ if __name__ == '__main__':
     # load model:
     model = Doc2Vec.load(args.model_path)
 
-    # help read articles:
-    fields = ["idx", "title", "authors", "subject", "abstract", "pubdate", "arxid"]
-    Article = namedtuple("Article", fields)
-
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
         app.run(debug=True, port=5000, host='0.0.0.0')

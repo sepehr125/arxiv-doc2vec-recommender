@@ -5,6 +5,15 @@
 <div class="col-md-6 doc">
 	<h2 class="">{{doc.title}} <small class="bg-info">[{{doc.subject}}]</small></h2>
 	<p>{{doc.abstract}}</p>
+	<cite>
+	<a href="http://arxiv.org/abs/{{doc.arxiv_id}}">
+		http://arxiv.org/abs/{{doc.arxiv_id}}
+	</a>
+
+	<a class='btn text-right' href="http://arxiv.org/pdf/{{doc.arxiv_id}}">
+	<span class="glyphicon glyphicon-file"></span> View PDF
+	</a>
+	</cite>
 </div>
 
 <div class="col-md-6">
