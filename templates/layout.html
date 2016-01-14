@@ -24,13 +24,18 @@
       }
       input.search {
         width: 50%;
+        margin: 30px auto;
+      }
+      .search:placeholder-shown {
+        color: orange;
+        text-align: center;
       }
     </style>
   </head>
   <body>
     <div class="container-fluid">
       <header>
-        <h1 class="text-center"><a href="#">SciExplore</a></h1>
+        <h1 class="text-center"><a href="/">SciExplore</a></h1>
           <form method="POST" action="search">
             <input type="text" class="center search" placeholder="Search" />
           </form>

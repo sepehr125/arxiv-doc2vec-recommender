@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block main %}
+<div class="col-md-12">
+Found {{ articles|length }} articles in:<br>
+<strong>{{ subject }}</strong> 
+
+  {% if articles|length > 0 %}
+    <ul class="articles">
+    {% for article in articles%}
+      <li>
+      	<a href="/article/{{article.index}}">
+      	{{article.title}}
+      	</a>
+      </li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

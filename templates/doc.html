@@ -11,7 +11,7 @@
 	</a>
 
 	<a class='btn text-right' href="http://arxiv.org/pdf/{{doc.arxiv_id}}">
-	<span class="glyphicon glyphicon-file"></span> View PDF
+		<span class="glyphicon glyphicon-file"></span> View PDF
 	</a>
 	</cite>
 </div>
@@ -21,7 +21,7 @@
 	<ul class="similars">
 	{% for sim in sims %}
 		<li>
-			<a href="/doc/{{ sim.index }}">
+			<a href="/article/{{ sim.index }}">
 			{{ sim.title }}</a>
 			<small class="bg-info">[{{sim.subject}}]</small>
 			</a>

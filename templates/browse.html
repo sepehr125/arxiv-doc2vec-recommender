@@ -3,7 +3,7 @@
 {% block main %}
   <ul id="subjects">
     {% for subject in subjects %}
-      <li><a href="/?cat={{subject}}">{{ subject }}</a></li>
+      <li><a href="/subjects/{{subject}}">{{ subject }}</a></li>
     {% endfor %}
   </ul>
 {% endblock %}
