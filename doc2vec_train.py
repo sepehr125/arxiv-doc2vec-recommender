@@ -15,10 +15,10 @@ class DocIterator(object):
     def __iter__(self):
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM articles;")
-            for index, title, authors, subject, abstract, pubdate, arxid in cur:
+            for index, title, authors, subject, abstract, pubdate, arxiv_id, subject_id in cur:
                 body = title + '. ' + abstract
                 words = re.findall(r"[\w']+|[.,!?;]", body)
-                tags = [index]
+                tags = [index, subject_id]
                 yield TaggedDocument(words, tags)
 
 
