@@ -29,11 +29,11 @@ function createNetwork(edgelist) {
 
   edgelist.forEach(function (edge) {
     if (!nodeHash[edge.source]) {
-      nodeHash[edge.source] = {id: edge.source, label: edge.source, name: edge.name};
+      nodeHash[edge.source] = {id: edge.source, label: edge.source, name: edge.source_name};
       nodes.push(nodeHash[edge.source]);
     }
     if (!nodeHash[edge.target]) {
-      nodeHash[edge.target] = {id: edge.target, label: edge.target, name:edge.name};
+      nodeHash[edge.target] = {id: edge.target, label: edge.target, name:edge.target_name};
       nodes.push(nodeHash[edge.target]);
     }
     if (edge.weight == 5) {
