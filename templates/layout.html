@@ -30,23 +30,42 @@
         color: orange;
         text-align: center;
       }
+      header {
+        padding: 30px 20px;
+        background: #02294A;
+        color: #fff;
+        margin-bottom: 20px
+      }
+
+      footer {
+        padding: 100px 20px;
+        clear: both;
+        background: #02294A;
+        margin-top: 20px;
+      }
+      .copyright {
+        color: #fff;
+      }
     </style>
   </head>
   <body>
+    <header>
+      <h1 class="text-center"><a href="/">SciExplore</a></h1>
+        <form method="POST" action="search">
+          <input type="text" class="center search" placeholder="Search" />
+        </form>
+      {% block after_header %}{% endblock %}
+      <strong><a class="center text-center" href="/subjects">Browse</a></strong>
+    </header>
     <div class="container-fluid">
-      <header>
-        <h1 class="text-center"><a href="/">SciExplore</a></h1>
-          <form method="POST" action="search">
-            <input type="text" class="center search" placeholder="Search" />
-          </form>
-        {% block after_header %}{% endblock %}
-      </header>
 
       <main class="col-md-12">
         {% block main %}{% endblock %}
       </main>
 
+    </div>
       <footer>
+        <h6 class="text-center copyright">Copyright 2016</h6>
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
@@ -54,6 +73,5 @@
         <script src="{{ url_for('static', filename='bootstrap/js/bootstrap3-typeahead.min.js') }}"></script>
         {% block scripts %}{% endblock %}
       </footer>
-    </div>
   </body>
 </html>

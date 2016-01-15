@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 
 {% block main %}
-  <ul id="subjects">
-    {% for subject in subjects %}
-      <li><a href="/subjects/{{subject}}">{{ subject }}</a></li>
+  <ol id="subjects">
+    {% for subject, count in subjects %}
+      <li><a href="/subjects/{{subject}}">{{ subject }}</a> ({{count}})</li>
     {% endfor %}
-  </ul>
+  </ol>
 {% endblock %}
 
 <!--     

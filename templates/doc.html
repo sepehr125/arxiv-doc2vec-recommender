@@ -3,14 +3,16 @@
 {% block main %}
 
 <div class="col-md-6 doc">
-	<h2 class="">{{doc.title}} <small class="bg-info">[{{doc.subject}}]</small></h2>
-	<p>{{doc.abstract}}</p>
+	<h2 class="">{{ main_article.title }} 
+		<small class="bg-info">[{{ main_article.subject }}]</small>
+	</h2>
+	<p>{{ main_article.abstract }}</p>
 	<cite>
-	<a href="http://arxiv.org/abs/{{doc.arxiv_id}}">
-		http://arxiv.org/abs/{{doc.arxiv_id}}
+	<a href="http://arxiv.org/abs/{{ main_article.arxiv_id }}">
+		http://arxiv.org/abs/{{ main_article.arxiv_id }}
 	</a>
 
-	<a class='btn text-right' href="http://arxiv.org/pdf/{{doc.arxiv_id}}">
+	<a class='btn text-right' href="http://arxiv.org/pdf/{{main_article.arxiv_id}}">
 		<span class="glyphicon glyphicon-file"></span> View PDF
 	</a>
 	</cite>
@@ -18,12 +20,12 @@
 
 <div class="col-md-6">
 	<h3 class="text-center">Similar Articles:</h3>
-	<ul class="similars">
-	{% for sim in sims %}
+	<ul class="relateds">
+	{% for related in sims %}
 		<li>
-			<a href="/article/{{ sim.index }}">
-			{{ sim.title }}</a>
-			<small class="bg-info">[{{sim.subject}}]</small>
+			<a href="/article/{{ related['index'] }}">
+			{{ related.title }}</a> ({{ related.pop() }})
+			<small class="bg-info">[{{ related.subject }}]</small>
 			</a>
 		</li>
 	{% endfor %}

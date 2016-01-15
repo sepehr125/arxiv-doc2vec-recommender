@@ -12,12 +12,12 @@ class DocIterator(object):
         self.conn = conn
 
     def __iter__(self):
-        with self.conn.cursor() as cur:
-            cur.execute("SELECT * FROM articles LIMIT 100;")
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM articles;")
             for index, title, authors, subject, abstract, pubdate, arxiv_id, subject_id in cur:
                 body = title + '. ' + abstract
                 words = re.findall(r"[\w']+|[.,!?;]", body)
-                tags = [index]
+                tags = [index, subject]
                 yield TaggedDocument(words, tags)
 
 
