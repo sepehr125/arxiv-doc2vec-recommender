@@ -52,6 +52,10 @@ def get_article(index):
         article = cur.fetchone()
         return article
 
+@app.route('/viz')
+def viz():
+    return render_template("louvain.html")
+
 @app.route('/subjects/')
 @app.route('/subjects/<subject>')
 def browse_subjects(subject=None):
