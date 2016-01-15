@@ -1,2 +1,4 @@
-raw/*notebooks/ipynb_checkpoints/*models/
+raw/*
+notebooks/.ipynb_checkpoints/*
+models/*
 static/subject_distances.csv
