@@ -8,6 +8,11 @@
   </ol>
 {% endblock %}
 
+{% block scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='forceInABox/forceInABox.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='jLouvain/jLouvain.js') }}"></script>
+{% endblock %}
+
 <!--     
 {#% for parent, children in subjects.items() %#}
     <li class="parent">
