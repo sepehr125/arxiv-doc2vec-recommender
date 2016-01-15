@@ -1,10 +1,7 @@
 {% extends "layout.html" %}
 
 {% block main %}
-<div id="viz">
-  <svg style="width: 100%; height:900px" class="main">
-  </svg>
-</div>
+  <svg style="width: 960px; height:900px" class="main"></svg>
 
   <ol id="subjects">
     {% for subject, count in subjects %}
@@ -32,11 +29,11 @@ function createNetwork(edgelist) {
 
   edgelist.forEach(function (edge) {
     if (!nodeHash[edge.source]) {
-      nodeHash[edge.source] = {id: edge.source, label: edge.source};
+      nodeHash[edge.source] = {id: edge.source, label: edge.source, name: edge.name};
       nodes.push(nodeHash[edge.source]);
     }
     if (!nodeHash[edge.target]) {
-      nodeHash[edge.target] = {id: edge.target, label: edge.target};
+      nodeHash[edge.target] = {id: edge.target, label: edge.target, name:edge.name};
       nodes.push(nodeHash[edge.target]);
     }
     if (edge.weight == 5) {
@@ -63,12 +60,12 @@ nodes.forEach(function (node) {
 });
 
 var force = d3.layout.forceInABox()
-    .charge(-120)
+    .charge(-20)
     .linkDistance(50)
-    .linkStrengthInterCluster(0.01)
+    .linkStrengthInterCluster(1.5)
     .gravityToFoci(0.2)
     .gravityOverall(0.05)
-    .size([500, 500])
+    .size([900, 900])
     .groupBy(function (d) {return d.module});
 
   force
@@ -97,7 +94,7 @@ var force = d3.layout.forceInABox()
   .call(force.drag());
 
   nodeEnter.append("circle")
-  .attr("r", 8)
+  .attr("r", 10)
   .style("fill", function (d) {return colors(d.module)})
   .style("stroke", "black")
   .style("stroke-width", "1px")
@@ -107,17 +104,17 @@ var force = d3.layout.forceInABox()
   .attr("y", 3)
   .style("stroke-width", "1px")
   .style("stroke-opacity", 0.75)
-  .style("stroke", "white")
-  .style("font-size", "8px")
-  .text(function (d) {return d.id})
+  .style("stroke", "black")
+  .style("font-size", "0px")
+  .text(function (d) {return d.name})
   .style("pointer-events", "none")
 
-  nodeEnter.append("text")
-  .style("text-anchor", "middle")
-  .attr("y", 3)
-  .style("font-size", "8px")
-  .text(function (d) {return d.id})
-  .style("pointer-events", "none")
+  // nodeEnter.append("text")
+  // .style("text-anchor", "middle")
+  // .attr("y", 3)
+  // .style("font-size", "8px")
+  // .text(function (d) {return d.id})
+  // .style("pointer-events", "none")
 
   force.start();
 
@@ -132,7 +129,22 @@ function updateGraph(e) {
     .attr("y2", function(d) { return d.target.y; });
 
   d3.selectAll("g.node")
-    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    .on("mouseover", function(d) {
+      d3.select(this)
+      .select("text")
+      .style("font-size", "15px")
+      .transition()
+        .attr("y", -30)
+    })
+    .on("mouseout", function(d){
+      // d3.select(this).select("text").remove()
+      d3.select(this).select("text").transition()
+        .delay(100)
+        .duration(200)
+        .style("font-size",0)
+        .style('pointer-events', 'none')
+    });
 }
 
 }
