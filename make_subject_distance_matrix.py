@@ -11,13 +11,21 @@ import argparse
 Looks into database for a "subjects" table
 and returns a dictionary of subject_id: subject_name
 """
-def get_subject_ids(dbname):
+# def get_subject_ids(dbname):
+#     with psycopg2.connect(dbname=dbname) as conn:
+#         with conn.cursor() as cur:
+#             cur.execute("SELECT index FROM subjects;")
+#             results = cur.fetchall()
+#             subject_ids = [i[0] for i in results]
+#             return subject_ids
+
+def get_subject_hash(dbname):
     with psycopg2.connect(dbname=dbname) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT index FROM subjects;")
+            cur.execute("SELECT index, subject FROM subjects;")
             results = cur.fetchall()
-            subject_ids = [i[0] for i in results]
-            return subject_ids
+            subject_hash = {i[0]: i[1] for i in results}
+            return subject_hash
 
 """
 Get panda DataFrame where each row is a subject's average docvec
@@ -63,14 +71,15 @@ if __name__ == '__main__':
     parser.add_argument('dbname', help="Database name")
     parser.add_argument('path_to_model', help="Model to test")
     parser.add_argument('n_closest', help="How many closest subjects to look into")
-    parser.add_argument('output_path', help="Where to put the CSV")
+    # parser.add_argument('output_path', help="Where to put the CSV")
     args = parser.parse_args()
 
     model = Doc2Vec.load(args.path_to_model)
 
     # get the unique subjects' names and ids from dbase
-    subject_ids = get_subject_ids(args.dbname)
-
+    # subject_ids = get_subject_ids(args.dbname)
+    subject_hash = get_subject_hash(args.dbname)
+    subject_ids = list(subject_hash.keys())
     # loop over subjects and average docvecs belonging to subject.
     # place in dictionary
     subject_vectors = get_subject_vectors(subject_ids)
@@ -80,9 +89,9 @@ if __name__ == '__main__':
     for subj_id in subject_ids:
         relateds = get_n_closest(distance_mat, subj_id, n=int(args.n_closest))
         for related_id, dist in relateds.iteritems():
-            row = (subj_id, related_id, round(1./dist))
+            row = (subj_id, related_id, round(1./dist), subject_hash[subj_id])
             to_csv.append(row)
     
-    edges = pd.DataFrame(to_csv, columns=['source', 'target', 'weight'])
+    edges = pd.DataFrame(to_csv, columns=['source', 'target', 'weight', 'name'])
 
-    edges.to_csv(args.output_path, index=False)
+    edges.to_csv('static/subject_distances.csv', index=False)
