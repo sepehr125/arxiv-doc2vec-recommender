@@ -1,6 +1,11 @@
 {% extends "layout.html" %}
 
 {% block main %}
+<div id="viz">
+  <svg style="width: 100%; height:900px" class="main">
+  </svg>
+</div>
+
   <ol id="subjects">
     {% for subject, count in subjects %}
       <li><a href="/subjects/{{subject}}">{{ subject }}</a> ({{count}})</li>
@@ -9,8 +14,129 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="http://d3js.org/d3.v3.min.js" type="text/JavaScript"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='forceInABox/forceInABox.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='jLouvain/jLouvain.js') }}"></script>
+<script>
+
+d3.csv("{{url_for('static', filename='subject_distances.csv')}}",function(error,data) {createNetwork(data)});
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
+function createNetwork(edgelist) {
+  var nodeHash = {};
+  var nodes = [];
+  var edges = [];
+
+  edgelist.forEach(function (edge) {
+    if (!nodeHash[edge.source]) {
+      nodeHash[edge.source] = {id: edge.source, label: edge.source};
+      nodes.push(nodeHash[edge.source]);
+    }
+    if (!nodeHash[edge.target]) {
+      nodeHash[edge.target] = {id: edge.target, label: edge.target};
+      nodes.push(nodeHash[edge.target]);
+    }
+    if (edge.weight == 5) {
+      edges.push({id: nodeHash[edge.source].id + "-" + nodeHash[edge.target].id, source: nodeHash[edge.source], target: nodeHash[edge.target], weight: edge.weight});
+    }
+  });
+  createForceNetwork(nodes, edges);
+}
+
+function createForceNetwork(nodes, edges) {
+
+//create a network from an edgelist
+
+var colors = d3.scale.ordinal().domain([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]).range(["#996666", "#66CCCC", "#FFFF99", "#CC9999", "#666633", "#993300", "#999966", "#660000", "#996699", "#cc6633", "#ff9966", "#339999", "#6699cc", "#ffcc66", "#ff6600", "#00ccccc"]);
+
+var node_data = nodes.map(function (d) {return d.id});
+var edge_data = edges.map(function (d) {return {source: d.source.id, target: d.target.id, weight: 1}; });
+
+var community = jLouvain().nodes(node_data).edges(edge_data);
+var result  = community();
+
+nodes.forEach(function (node) {
+  node.module = result[node.id]
+});
+
+var force = d3.layout.forceInABox()
+    .charge(-120)
+    .linkDistance(50)
+    .linkStrengthInterCluster(0.01)
+    .gravityToFoci(0.2)
+    .gravityOverall(0.05)
+    .size([500, 500])
+    .groupBy(function (d) {return d.module});
+
+  force
+    .nodes(nodes)
+    .links(edges)
+    .on("tick", updateGraph);
+
+  var edgeEnter = d3.select("svg.main").selectAll("g.edge")
+  .data(edges, function (d) {return d.id})
+  .enter()
+  .append("g")
+  .attr("class", "edge");
+
+  edgeEnter
+  .append("line")
+  .style("stroke-width", "1px")
+  .style("stroke", "black")
+  .style("pointer-events", "none");
+
+  var nodeEnter = d3.select("svg.main")
+  .selectAll("g.node")
+  .data(nodes, function (d) {return d.id})
+  .enter()
+  .append("g")
+  .attr("class", "node")
+  .call(force.drag());
+
+  nodeEnter.append("circle")
+  .attr("r", 8)
+  .style("fill", function (d) {return colors(d.module)})
+  .style("stroke", "black")
+  .style("stroke-width", "1px")
+
+  nodeEnter.append("text")
+  .style("text-anchor", "middle")
+  .attr("y", 3)
+  .style("stroke-width", "1px")
+  .style("stroke-opacity", 0.75)
+  .style("stroke", "white")
+  .style("font-size", "8px")
+  .text(function (d) {return d.id})
+  .style("pointer-events", "none")
+
+  nodeEnter.append("text")
+  .style("text-anchor", "middle")
+  .attr("y", 3)
+  .style("font-size", "8px")
+  .text(function (d) {return d.id})
+  .style("pointer-events", "none")
+
+  force.start();
+
+
+function updateGraph(e) {
+  force.onTick(e);
+
+  d3.selectAll("line")
+    .attr("x1", function(d) { return d.source.x; })
+    .attr("y1", function(d) { return d.source.y; })
+    .attr("x2", function(d) { return d.target.x; })
+    .attr("y2", function(d) { return d.target.y; });
+
+  d3.selectAll("g.node")
+    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+}
+
+}
+</script>
 {% endblock %}
 
 <!--     
