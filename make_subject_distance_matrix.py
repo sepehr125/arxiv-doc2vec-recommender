@@ -86,12 +86,13 @@ if __name__ == '__main__':
     distance_mat = get_distance_mat(subject_vectors)
 
     to_csv = []
+    to_avoid = []
     for subj_id in subject_ids:
         relateds = get_n_closest(distance_mat, subj_id, n=int(args.n_closest))
         for related_id, dist in relateds.iteritems():
-            row = (subj_id, related_id, round(1./dist), subject_hash[subj_id])
+            row = (subj_id, related_id, round(1./dist), subject_hash[subj_id], subject_hash[related_id])
             to_csv.append(row)
     
-    edges = pd.DataFrame(to_csv, columns=['source', 'target', 'weight', 'name'])
+    edges = pd.DataFrame(to_csv, columns=['source', 'target', 'weight', 'source_name', 'target_name'])
 
     edges.to_csv('static/subject_distances.csv', index=False)
