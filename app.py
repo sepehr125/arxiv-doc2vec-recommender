@@ -90,12 +90,12 @@ def find_analogy():
     unlike = request.args.get('unlike', '')
     unlike = [word.lower() for word in list(unlike) if word not in ('', '#')]
     if not likes and not unlike:
-        return render_template("analogy.html", analogies='find')
+        return render_template("analogy.html", analogies=[], error=False)
     try:
         analogies = model.most_similar(positive=likes, negative=unlike)
         return render_template("analogy.html", analogies=analogies)
     except:
-        return render_template("analogy.html", analogies='notfound')
+        return render_template("analogy.html", analogies=[], error=True)
 
 
 

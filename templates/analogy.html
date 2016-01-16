@@ -1,21 +1,20 @@
 {% extends "layout.html" %}
 
 {% block main %}
-	<h3>Find analogies</h3>
 	<form action="#" method="GET">
 		<input name="like1" type="text" />
 		<input name="like2" type="text" />
 		<input name="unlike" type="text" />
 		<button>Find analogy</button>
 	</form>
-	{% if analogies == 'notfound' %}
-		<p>Sorry, no analogies found. Try again!</p>
-	{% else %}
+	{% if analogies|length > 0 %}
 		<ul class="analogies">
 			{% for word, fit in analogies %}
 			<li>{{ word }}</li>
 			{% endfor %}
 		</ul>
-		
+	{% endif %}
+	{% if error %}
+		<p class="error">Sorry, no analogies found. Try again!</p>
 	{% endif %}
 {% endblock %}
