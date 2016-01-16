@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from operator import itemgetter
 import psycopg2
 import psycopg2.extras
@@ -16,20 +15,9 @@ app = Flask(__name__)
 def get_subjects():
     cur = conn.cursor()
     query = "SELECT subject, count(*) FROM articles group by subject;"
-    # query = "SELECT COUNT(*) FROM (SELECT DISTINCT subject FROM articles) AS temp;"
     cur.execute(query)
-    # subjects = sorted([s[0] for s in cur.fetchall()])
     subjects = sorted(cur.fetchall(), key=lambda tup:tup[0])
     return subjects
-    # d = defaultdict(list)
-    # for s in subjects:
-    #     parent_child = s.split(' - ')
-    #     if len(parent_child) == 2:
-    #         d[parent_child[0]].append(parent_child[1])
-    #     elif len(parent_child) == 1:
-    #         d[parent_child[0]] = []
-
-    # return OrderedDict(sorted(d.items()))
 
 def get_articles(indices):
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
@@ -56,6 +44,7 @@ def get_article(index):
 def viz():
     return render_template("louvain.html")
 
+@app.route('/')
 @app.route('/subjects/')
 @app.route('/subjects/<subject>')
 def browse_subjects(subject=None):
@@ -74,10 +63,6 @@ def find_similars(main_article_id=None):
     sort_these = []
     for article in sim_articles:
         sim_score = [score for idx, score in sims if article['index'] == idx ][0]
-        # why is article not a dictionary???? 
-        # how is it that in the template, I can use the key names to get its values
-        # but I can't add a key value pair here:
-        # article['similarity'] = round(sim_score, 2)
         article.extend([round(sim_score, 2)])
         sort_these.append(article)
 
@@ -86,10 +71,17 @@ def find_similars(main_article_id=None):
 
     return render_template("doc.html", main_article=main_article, sims=sort_these)
 
+@app.route('/search', methods=['POST'])
+def search():
+    if request.method == 'POST':
+        query = request.form['search']
+        q_vec = model.infer_vector(query.split())
+        results = model.docvecs.most_similar(positive=[q_vec], topn=100)
+        results = [int(r[0]) for r in results]
+        results = get_articles(results)
+        return render_template("search.html", articles=results)
 
-@app.route('/')
-def home():
-    return render_template("main.html")
+
 
 if __name__ == '__main__':
     
@@ -102,4 +94,4 @@ if __name__ == '__main__':
 
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
-        app.run(debug=True)
+        app.run(host='0.0.0.0', debug=True)

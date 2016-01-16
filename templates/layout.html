@@ -22,13 +22,11 @@
         display: block;
         margin: 0 auto;
       }
-      input.search {
+      .search {
         width: 50%;
         margin: 30px auto;
-      }
-      .search:placeholder-shown {
-        color: orange;
-        text-align: center;
+        color: black;
+
       }
       header {
         padding: 30px 20px;
@@ -51,11 +49,14 @@
   <body>
     <header>
       <h1 class="text-center"><a href="/">SciExplore</a></h1>
-        <form method="POST" action="search">
-          <input type="text" class="center search" placeholder="Search" />
+        <form method="POST" action="/search">
+          <!-- <textarea class="center search" name="search" placeholder="Search"></textarea> -->
+          <input type="text" class="center search" name="search" placeholder="Search"></textarea>
+          <button>Search</button>
         </form>
       {% block after_header %}{% endblock %}
       <strong><a class="center text-center" href="/subjects">Browse</a></strong>
+      <strong><a class="center text-center" href="/viz">Visualize Topics</a></strong>
     </header>
     <div class="container-fluid">
 

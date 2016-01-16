@@ -30,7 +30,7 @@ function createNetwork(edgelist) {
       nodeHash[edge.target] = {id: edge.target, label: edge.target, name:edge.target_name};
       nodes.push(nodeHash[edge.target]);
     }
-    if (edge.weight == 5) {
+    if (edge.weight == 2) {
       edges.push({id: nodeHash[edge.source].id + "-" + nodeHash[edge.target].id, source: nodeHash[edge.source], target: nodeHash[edge.target], weight: edge.weight});
     }
   });
@@ -53,11 +53,11 @@ nodes.forEach(function (node) {
   node.module = result[node.id]
 });
 
-var force = d3.layout.forceInABox()
-    .charge(-50)
+force = d3.layout.forceInABox()
+    .charge(-120)
     .linkDistance(50)
-    .linkStrengthInterCluster(1.5)
-    .gravityToFoci(0.2)
+    .linkStrengthInterCluster(2)
+    .gravityToFoci(5)
     .gravityOverall(0.05)
     .size([900, 900])
     .groupBy(function (d) {return d.module});
@@ -96,12 +96,13 @@ var force = d3.layout.forceInABox()
   nodeEnter.append("text")
   .style("text-anchor", "middle")
   .attr("y", 3)
-  .style("stroke-width", "1px")
-  .style("stroke-opacity", 0.75)
-  .style("stroke", "black")
+  // .style("stroke-width", "1px")
+  // .style("stroke-opacity", 0.75)
+  // .style("stroke", "black")
   .style("font-size", "0px")
+  .style("font-weight", "800")
   .text(function (d) {return d.name})
-  .style("pointer-events", "none")
+  // .style("pointer-events", "none")
 
   // nodeEnter.append("text")
   // .style("text-anchor", "middle")
