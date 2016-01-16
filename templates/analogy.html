@@ -2,15 +2,15 @@
 
 {% block main %}
 	<form action="#" method="GET">
-		<input name="like1" type="text" />
-		<input name="like2" type="text" />
-		<input name="unlike" type="text" />
+		<input name="like1" type="text" value="{{request.args.get('like1')}}" />
+		<input name="like2" type="text" value="{{request.args.get('like2')}}" />
+		<input name="unlike" type="text" value="{{request.args.get('unlike')}}" />
 		<button>Find analogy</button>
 	</form>
 	{% if analogies|length > 0 %}
 		<ul class="analogies">
 			{% for word, fit in analogies %}
-			<li>{{ word }}</li>
+			<li>{{ word }} <small>{{fit}}</small></li>
 			{% endfor %}
 		</ul>
 	{% endif %}
