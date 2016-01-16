@@ -81,6 +81,20 @@ def search():
         results = get_articles(results)
         return render_template("search.html", articles=results)
 
+@app.route('/analogy')
+def find_analogy():
+    like1 = request.args.get('like1', '')
+    like2 = request.args.get('like2', '')
+    likes = [word.lower() for word in [like1, like2] if word != '']
+    
+    unlike = request.args.get('unlike', '')
+    unlike = [word.lower() for word in list(unlike) if word not in ('', '#')]
+    try:
+        analogies = model.most_similar(positive=likes, negative=unlike)
+        return render_template("analogy.html", analogies=analogies)
+    except:
+        return render_template("analogy.html", analogies=[])
+
 
 
 if __name__ == '__main__':

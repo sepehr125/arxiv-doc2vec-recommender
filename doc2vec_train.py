@@ -17,7 +17,7 @@ class DocIterator(object):
             for index, title, authors, subject, abstract, pubdate, arxiv_id, subject_id in cur:
                 body = title + '. ' + abstract
                 words = re.findall(r"[\w']+|[.,!?;]", body)
-                tags = [index, subject]
+                words = [word.lower() for word in words]
                 tags = [index]
                 yield TaggedDocument(words, tags)
 
