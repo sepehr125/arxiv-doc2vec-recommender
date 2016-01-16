@@ -18,6 +18,7 @@ class DocIterator(object):
                 body = title + '. ' + abstract
                 words = re.findall(r"[\w']+|[.,!?;]", body)
                 tags = [index, subject]
+                tags = [index]
                 yield TaggedDocument(words, tags)
 
 
