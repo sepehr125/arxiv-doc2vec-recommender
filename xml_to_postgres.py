@@ -37,7 +37,7 @@ def get_arxivid(root):
     els = root.findall(tag)
     for el in els:
         if el.text.startswith('http://arxiv.org/abs/'):
-            return el.text.split('/').pop()
+            return el.text
     return None
 
 def get_date(root):
@@ -50,7 +50,7 @@ def create_schema(dbname='arxiv'):
     conn = psycopg2.connect(dbname=dbname)
     cur = conn.cursor()
     sql_create = """CREATE TABLE IF NOT EXISTS articles (
-        index serial PRIMARY KEY,
+        ix serial PRIMARY KEY,
         title text,
         authors text,
         subject text,
@@ -94,6 +94,8 @@ def parse_and_insert_xml(f_path, dbname='arxiv'):
             cur.execute(insert_query)
             conn.commit()
 
+def chunker(seq, size):
+    return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
 
 if __name__ == '__main__':
 
@@ -105,29 +107,25 @@ if __name__ == '__main__':
     print(args.data_dir)
     print(args.dbname)
 
-    # create the table if needed. default dbase name is arxiv. 
     create_schema(dbname=args.dbname)
-
-    # data_dir = '/Users/Sepehr/dev/data-projects/arxiv-doc2vec-recommender/data/'
+    query_template = "(title, authors, subject, abstract, last_submitted, arxiv_id) VALUES (%s, %s, %s, %s, %s, %s)"
     filenames = os.listdir(args.data_dir)
 
-    print("Embarking on processing %d files."%len(filenames))
-    wins, fails = 0, 0
-    init_time = time()
-    for fname in filenames:
-        f_path = args.data_dir + fname
-        # print(f_path)
-        try:
-            parse_and_insert_xml(f_path, args.dbname)
-            wins += 1
-        except:
-            fails += 1
-            pass
-        if (wins+fails)%500==0:
-            # print("Last attempt: #%d -- %s"%((wins+fails), fname))
-            print("Inserted %d documents. %d attempts failed"%(wins, fails))
-            print("Seconds elapsed: %s"%(time() - init_time))
+    conn = psycopg2.connect(dbname=args.dbname)
+    cur = conn.cursor()
 
-    print("Total documents inserted: %d"%(wins+fails))
-    print("Documents failed: %d"%fails)
+    print("Embarking on processing %d files."%len(filenames))
+    init_time = time()
+    for group in chunker(filenames, 1000):
+        qs = []
+        for fname in group:
+            f_path = args.data_dir + fname
+            values = make_row(f_path)
+            q = cur.mogrify("(%s, %s, %s, %s, %s, %s)", values)
+            qs.append(q)
+        insert_group = ', '.join(qs)
+        cur.execute("INSERT INTO articles (title, authors, subject, abstract, last_submitted, arxiv_id) VALUES "+ insert_group)
+
+    conn.commit()
+    conn.close()
     print("Total time elapsed %s seconds"%(time() - init_time))

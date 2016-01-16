@@ -1,3 +1,4 @@
+data/*
 raw/*
 notebooks/.ipynb_checkpoints/*
 models/*
