@@ -57,7 +57,7 @@ def browse_subjects(subject=None):
 @app.route('/article/<main_article_id>')
 def find_similars(main_article_id=None):
     main_article = get_article(main_article_id)
-    sims = model.docvecs.most_similar(int(main_article_id)) # list of (id, similarity)
+    sims = model.docvecs.most_similar(int(main_article_id), topn=10) # list of (id, similarity)
     sim_articles = get_articles([int(index) for index, sim in sims]) # list of dictionaries...
     # we're gonna add similarity scores to each dictionary (article) in above list from sims
     sort_these = []

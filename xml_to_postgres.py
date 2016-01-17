@@ -1,9 +1,7 @@
-import sys
 import psycopg2
 import os
 from xml.etree import ElementTree as ET
 from datetime import datetime
-from time import time
 import argparse
 
 """
@@ -46,22 +44,6 @@ def get_date(root):
     dates = [datetime.strptime(el.text, "%Y-%m-%d").date() for el in els]
     return (max(dates))
 
-def create_schema(dbname='arxiv'):
-    conn = psycopg2.connect(dbname=dbname)
-    cur = conn.cursor()
-    sql_create = """CREATE TABLE IF NOT EXISTS articles (
-        ix serial PRIMARY KEY,
-        title text,
-        authors text,
-        subject text,
-        abstract text,
-        last_submitted date,
-        arxiv_id text UNIQUE
-    )"""
-    cur.execute(sql_create)
-    conn.commit()
-    conn.close()
-
 
 """
 This just combines the above helper functions
@@ -81,51 +63,74 @@ def make_row(f_path):
     return (title, authors, subject, abstract, last_submitted, arxiv_id)
 
 
-"""
-Given a single xml file, inserts it into database
-"""
-def parse_and_insert_xml(f_path, dbname='arxiv'):
-    with psycopg2.connect(dbname=dbname) as conn:
-        with conn.cursor() as cur:
-            # TODO: do batches of files
-            query_template = "INSERT INTO articles (title, authors, subject, abstract, last_submitted, arxiv_id) VALUES (%s, %s, %s, %s, %s, %s)"
-            values = make_row(f_path)
-            insert_query = cur.mogrify(query_template, values)
-            cur.execute(insert_query)
-            conn.commit()
 
 def chunker(seq, size):
-    return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Parses xml files for fields and inserts into database')
     parser.add_argument('data_dir', help="Path to data folder")
-    parser.add_argument('dbname', help="Name of postgres database")
+    parser.add_argument('dbname', help="Name of **existing** postgres database.")
     args = parser.parse_args()
 
-    print(args.data_dir)
-    print(args.dbname)
+    """
+    Make sure given data_dir and dbname exist
+    """
+    try:
+        conn = psycopg2.connect(dbname=args.dbname)
+    except:
+        raise ValueError("Database not exists")
 
-    create_schema(dbname=args.dbname)
-    query_template = "(title, authors, subject, abstract, last_submitted, arxiv_id) VALUES (%s, %s, %s, %s, %s, %s)"
-    filenames = os.listdir(args.data_dir)
+    try:
+        filenames = os.listdir(args.data_dir)
+    except:
+        raise ValueError("Directory not found")
 
-    conn = psycopg2.connect(dbname=args.dbname)
-    cur = conn.cursor()
+    """
+    MAIN BLOCK:
+    Create schema if it doesn't exist
+    and perform inserts
+    """
+    with psycopg2.connect(dbname=args.dbname) as conn:
+        with conn.cursor() as cur:
+            
+            sql_create = """CREATE TABLE IF NOT EXISTS articles (
+                        index serial PRIMARY KEY,
+                        title text,
+                        authors text,
+                        subject text,
+                        abstract text,
+                        last_submitted date,
+                        arxiv_id text UNIQUE
+                    )"""
+            cur.execute(sql_create)
+            conn.commit()
 
-    print("Embarking on processing %d files."%len(filenames))
-    init_time = time()
-    for group in chunker(filenames, 1000):
-        qs = []
-        for fname in group:
-            f_path = args.data_dir + fname
-            values = make_row(f_path)
-            q = cur.mogrify("(%s, %s, %s, %s, %s, %s)", values)
-            qs.append(q)
-        insert_group = ', '.join(qs)
-        cur.execute("INSERT INTO articles (title, authors, subject, abstract, last_submitted, arxiv_id) VALUES "+ insert_group)
-
-    conn.commit()
-    conn.close()
-    print("Total time elapsed %s seconds"%(time() - init_time))
+            """
+            Prepare to insert rows in batches
+            Using batches helps speed tremendously (~100x)
+            """
+            batch_size = 1000
+            batch_num = 1
+            query_template = """
+                INSERT INTO articles 
+                (title, authors, subject, abstract, last_submitted, arxiv_id) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """
+            print("Processing %d files in batches of %d..."%(len(filenames), batch_size))
+            for batch in chunker(filenames, batch_size):
+                skips = 0
+                for fname in batch:
+                    f_path = os.path.join(args.data_dir, fname)
+                    values = make_row(f_path)
+                    try:
+                        cur.execute(query_template, values)
+                    except psycopg2.IntegrityError:
+                        skips += 1
+                        conn.rollback()
+                        continue
+                """Write the batch to disk in order to free memory"""
+                conn.commit()
+                print("batch %d, skipped %d"%(batch_num, skips))
+                batch_num += 1

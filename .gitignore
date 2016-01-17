@@ -1,6 +1,4 @@
-data/*
-raw/*
 notebooks/.ipynb_checkpoints/*
 models/*
 static/subject_distances.csv
-pdf/*
+tmp/*
