@@ -7,7 +7,7 @@ from gensim.models import Doc2Vec
 import re
 import argparse
 
-application = Flask(__name__)
+appserver = Flask(__name__)
 
 """Helpers"""
 
@@ -79,9 +79,9 @@ def get_article(index):
 ROUTES
 """
 
-@application.route('/')
-@application.route('/topics/')
-@application.route('/topics/<subject>')
+@appserver.route('/')
+@appserver.route('/topics/')
+@appserver.route('/topics/<subject>')
 def browse_subjects(subject=None):
     """
     Route for displaying home page, 
@@ -94,7 +94,7 @@ def browse_subjects(subject=None):
         articles = get_articles_by_subject(subject)
         return render_template("articles.html", articles=articles, subject=subject)
 
-@application.route('/article/<main_article_id>')
+@appserver.route('/article/<main_article_id>')
 def find_similars(main_article_id=None):
     main_article = get_article(main_article_id)
     sims = model.docvecs.most_similar(int(main_article_id), topn=10) # list of (id, similarity)
@@ -108,7 +108,7 @@ def find_similars(main_article_id=None):
 
     return render_template("doc.html", main_article=main_article, sims=sort_these)
 
-@application.route('/search', methods=['POST'])
+@appserver.route('/search', methods=['POST'])
 def search():
     if request.method == 'POST':
         query = request.form['search']
@@ -118,7 +118,7 @@ def search():
         results = get_articles(results)
         return render_template("search.html", articles=results, q=query)
 
-@application.route('/analogy')
+@appserver.route('/analogy')
 def find_analogy():
     """
     king - man + woman = queen
@@ -146,7 +146,7 @@ def find_analogy():
         return render_template("analogy.html", analogies=[], error=True)
 
 
-@application.route('/viz')
+@appserver.route('/viz')
 def viz():
     """
     If we think of similarity as a weight 
@@ -176,4 +176,5 @@ if __name__ == '__main__':
     with psycopg2.connect(dbname='arxiv') as conn:
         # load model:
         model = Doc2Vec.load(args.model_path)
-        application.run(host='0.0.0.0', port=int(args.port), debug=True)
+        # appserver.run(host='0.0.0.0', port=int(args.port), debug=True)
+        appserver.run(host='0.0.0.0', port=80)
