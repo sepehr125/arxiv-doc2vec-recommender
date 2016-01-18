@@ -6,11 +6,16 @@ from datetime import datetime
 import argparse
 
 """
-Example:
+The Open Archives Initiative (OAI) is the provider
+of metadata scraped by our harvester in XML format. 
 
+The XML files are here parsed for relevant fields,
+and inserted into a database.
+
+Example use of this script:
     $ python xml_to_postgres.py path/to/xml_dir arxiv_db
 
-Parse XML files in a given directory for the following fields:
+would parse files in xml_dir for the following fields:
 - title
 - authors
 - subject
@@ -55,12 +60,11 @@ worm in real time.
 
 
 def get_fields(file_path):
-    """Calls helper functions below to
+    """This calls helper functions below to
     gather fields from XML file into a tuple. 
     This tuple is used as input to 
-    PostgreSQL INSERT command later,
-    which will take of any missing value problems.
-    We do, however, prevent error being raised
+    PostgreSQL INSERT command later.
+    Prevents error being raised
     by exiting early if file is not XML.
 
     Args:
@@ -74,14 +78,17 @@ def get_fields(file_path):
 
     if not file_path.endswith('.xml'):
         return False
+
     tree = ET.parse(file_path)
     root = tree.getroot()
+
     title = get_title(root)
     authors = get_authors(root)
     subject = get_subject(root)
     abstract = get_abstract(root)
     last_submitted = get_date(root)
     arxiv_id = get_arxivid(root)
+    
     return (title, authors, subject, abstract, last_submitted, arxiv_id)
 
 
@@ -93,11 +100,13 @@ def get_title(root):
     Returns:
         str: title
         None: if no match is found
+
+    Note: calling .text on a nonexisting match raises error,
+    so we use a check to skip
     """
     tag = '{http://purl.org/dc/elements/1.1/}title'
-    # .find() returns first instance.
     title = root.find(tag)
-    if title.text:
+    if type(title) == ET.Element:
         return title.text
 
 
@@ -126,12 +135,15 @@ def get_subject(root):
         root (Element): ElementTree root element
     
     Returns:
-        str: The first subject tag (not sure if some have more)
+        str: The first subject tag 
         None: if no match is found
+
+    Note: calling .text on a nonexisting match raises error,
+    so we use an if statement to skip
     """
     tag = '{http://purl.org/dc/elements/1.1/}subject'
     subject = root.find(tag)
-    if subject.text:
+    if type(subject) == ET.Element:
         return subject.text
 
 
@@ -186,7 +198,7 @@ def get_date(root):
         root (Element): ElementTree root element
     
     Returns:
-        datetime: last submitted date
+        datetime: last submitted date in Y-m-d format
         None: if no match is found
     """
 
@@ -206,37 +218,25 @@ def chunker(seq, size):
 
 
 if __name__ == '__main__':
+    """This script requires an existing database and a folder
+    of XML files to parse.
+    It will create a table if none exists, and parse all files
+    to insert into the database.
+    If the file has already been inserted, it will skip without
+    an error, but there is a performance cost when such 
+    exceptions are caught, so it is recommended to either drop
+    existing tables and re-insert fresh from the files, or 
+    place new files in a separate directory from those already
+    inserted.
+    """
 
     parser = argparse.ArgumentParser(description=
         'Parses xml files for fields and inserts into database')
-    parser.add_argument('data_dir', help="Path to data folder")
+    parser.add_argument('data_dir', help="Path to data folder holding XML files from OAI")
     parser.add_argument('dbname', help="Name of **existing** postgres database.")
     args = parser.parse_args()
 
-    """
-    Make sure given database (dbname) exists
-    """
-    try:
-        conn = psycopg2.connect(dbname=args.dbname)
-    except:
-        raise ValueError("Database not exists")
-
-    """
-    Make sure given directory (data_dir) exists
-    """
-    try:
-        filenames = os.listdir(args.data_dir)
-    except:
-        raise ValueError("Directory not found")
-
-
-    """
-    No errors!?
-    Connect to database,
-    Make table if it doesn't exist,
-    Loop over files in batches,
-    and perform inserts.
-    """
+    filenames = os.listdir(args.data_dir)
     with psycopg2.connect(dbname=args.dbname) as conn:
         with conn.cursor() as cur:
             
@@ -278,7 +278,9 @@ if __name__ == '__main__':
                         skips += 1
                         conn.rollback()
                         continue
-                """Write the batch to disk in order to free memory"""
+                """Done with batch.
+                Commit batch to disk to free memory"""
                 conn.commit()
+                
                 print("batch %d, skipped %d"%(batch_num, skips))
                 batch_num += 1
