@@ -260,6 +260,8 @@ if __name__ == '__main__':
             """
             batch_size = 1000
             batch_num = 1
+            # I think there's a way to make this faster
+            # by making one long statement, if 
             query_template = """
                 INSERT INTO articles 
                 (title, authors, subject, abstract, last_submitted, arxiv_id) 
@@ -271,6 +273,8 @@ if __name__ == '__main__':
                 for fname in batch:
                     file_path = os.path.join(args.data_dir, fname)
                     values = get_fields(file_path)
+                    # try and except should be fast enough for most cases, 
+                    # unless there are a lot duplicates to skip.
                     try:
                         cur.execute(query_template, values)
                     except psycopg2.IntegrityError:

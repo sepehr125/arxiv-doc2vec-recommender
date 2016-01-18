@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from operator import itemgetter
 import psycopg2
-import psycopg2.extras
+from psycopg2.extras import DictCursor
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -20,21 +21,21 @@ def get_subjects():
     return subjects
 
 def get_articles(indices):
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+    with conn.cursor(cursor_factory=DictCursor) as cur:
         query = cur.mogrify("SELECT * FROM articles WHERE index IN %s ORDER BY last_submitted DESC", (tuple(indices),))
         cur.execute(query)
         articles = cur.fetchall()
         return articles
 
 def get_articles_by_subject(subject):
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+    with conn.cursor(cursor_factory=DictCursor) as cur:
         query = "SELECT * FROM articles WHERE subject='" + subject + "' ORDER BY last_submitted DESC"
         cur.execute(query)
         articles = cur.fetchall()
         return articles
 
 def get_article(index):
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+    with conn.cursor(cursor_factory=DictCursor) as cur:
         query = "SELECT * FROM articles WHERE index="+str(index)
         cur.execute(query)
         article = cur.fetchone()

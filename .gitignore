@@ -1,4 +1,4 @@
-notebooks/.ipynb_checkpoints/*
+tmp/*
+EDA/*
 models/*
 static/subject_distances.csv
-tmp/*

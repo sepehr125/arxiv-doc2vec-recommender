@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import multiprocessing
 import psycopg2
 from psycopg2.extras import DictCursor
@@ -10,6 +11,9 @@ class DocIterator(object):
     """
     gensim documentation calls this "streaming a corpus", which 
     lets us train without holding entire corpus in memory.
+    It needs to be an object so gensim can make multiple passes over data.
+    
+    Here, we stream from a postgres database.
     """
     def __init__(self, conn):
         self.conn = conn
@@ -18,7 +22,6 @@ class DocIterator(object):
         """
         Doc2Vec requires two passes over the data, so it is necessary
         to create this iterator object that it can call twice.
-        Here, we stream from a postgres database.
         """
         with conn.cursor(cursor_factory=DictCursor) as cur:
             # TODO: save names of table and database 
