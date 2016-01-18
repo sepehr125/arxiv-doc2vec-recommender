@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+{% block q %}{{q}}{% endblock %}
+
 {% block main %}
 <ul class="search-results">
 {% for article in articles %}

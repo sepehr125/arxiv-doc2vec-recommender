@@ -18,23 +18,12 @@
         margin-left: auto;
         max-width: 960px;
       }
-      .center {
-        display: block;
-        margin: 0 auto;
-      }
-      .search {
-        width: 50%;
-        margin: 30px auto;
-        color: black;
-
-      }
       header {
         padding: 30px 20px;
         background: #02294A;
         color: #fff;
         margin-bottom: 20px
       }
-
       footer {
         padding: 100px 20px;
         clear: both;
@@ -47,12 +36,17 @@
     </style>
   </head>
   <body>
-    <header>
+    <header class="row">
       <h1 class="text-center"><a href="/">SciExplore</a></h1>
-        <form method="POST" action="/search">
-          <input type="text" class="center search" name="search" placeholder="Search"></textarea>
-          <button>Search</button>
-        </form>
+      
+      <div class="col-lg-6 col-lg-offset-3">
+        <form class="input-group" method="POST" action="/search">
+          <input value="{% block q %}{%endblock%}" 
+          type="text" class="form-control search" name="search" placeholder="Search"></textarea>
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="button">Search</button>
+          </span>
+      </div>
       {% block after_header %}{% endblock %}
       <strong><a class="center text-center" href="/subjects">Browse</a></strong>
       <strong><a class="center text-center" href="/viz">Visualize Topics</a></strong>

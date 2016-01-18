@@ -9,20 +9,18 @@ from gensim.models import Doc2Vec
 import re
 import argparse
 
-
 application = Flask(__name__)
-
 
 """Helpers"""
 
-def subjects_counts():
+def get_subjects():
     """
-    Called by browse_subjects.
-
-    Returns: 
-        list: list sorted alphabetically,
-              containing tuples (subject, count),
-              where count is the number of articles in subject
+    OUTPUT: list of tuples containing:
+            (subject name, count)
+            where count is the number of articles in subject,
+            ordered alphabetically by subject name
+    
+    Called by browse_subjects()
     """
     cur = conn.cursor()
     cur.execute("SELECT subject, COUNT(*) FROM articles GROUP BY subject;")
@@ -32,38 +30,66 @@ def subjects_counts():
 
 def get_articles(indices):
     """
+    INPUT: list of integers corresponding to
+        'index' column values of desired articles in database
 
+    OUTPUT: list of dictionaries, each dictionary
+        corresponding to an article
     """
     with conn.cursor(cursor_factory=DictCursor) as cur:
-        query = cur.mogrify("SELECT * FROM articles WHERE index IN %s ORDER BY last_submitted DESC", (tuple(indices),))
-        cur.execute(query)
+        query = "SELECT * FROM articles \
+            WHERE index IN %s \
+            ORDER BY last_submitted DESC"
+        cur.execute(query, (tuple(indices),))
         articles = cur.fetchall()
         return articles
 
+
 def get_articles_by_subject(subject):
+    """
+    INPUT: 
+        (str): subject name
+
+    OUTPUT: list of dictionaries, each dictionary
+        corresponding to an article
+    """
     with conn.cursor(cursor_factory=DictCursor) as cur:
-        query = "SELECT * FROM articles WHERE subject=%s ORDER BY last_submitted DESC"
+        query = "SELECT * FROM articles \
+            WHERE subject=%s \
+            ORDER BY last_submitted DESC"
         cur.execute(query, (subject,))
         articles = cur.fetchall()
         return articles
 
+
 def get_article(index):
+    """
+    INPUT: 
+        (int): article index
+
+    OUTPUT: 
+        (dict): dictionary object representing 
+            article matching the given index
+    """
     with conn.cursor(cursor_factory=DictCursor) as cur:
         query = "SELECT * FROM articles WHERE index=%s"
         cur.execute(query, (index, ))
         article = cur.fetchone()
         return article
 
-@application.route('/viz')
-def viz():
-    return render_template("louvain.html")
+"""
+ROUTES
+"""
 
 @application.route('/')
 @application.route('/subjects/')
 @application.route('/subjects/<subject>')
 def browse_subjects(subject=None):
+    """
+
+    """
     if subject is None:
-        return render_template("browse.html", subjects=subjects_counts())
+        return render_template("browse.html", subjects=get_subjects())
     else:
         articles = get_articles_by_subject(subject)
         return render_template("articles.html", articles=articles, subject=subject)
@@ -93,7 +119,7 @@ def search():
         results = model.docvecs.most_similar(positive=[q_vec], topn=100)
         results = [int(r[0]) for r in results]
         results = get_articles(results)
-        return render_template("search.html", articles=results)
+        return render_template("search.html", articles=results, q=query)
 
 @application.route('/analogy')
 def find_analogy():
@@ -112,17 +138,20 @@ def find_analogy():
         return render_template("analogy.html", analogies=[], error=True)
 
 
+@application.route('/viz')
+def viz():
+    return render_template("louvain.html")
+
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Fire up flask server with appropriate model')
     parser.add_argument('model_path', help="Name of model file")
     parser.add_argument('port', help="Port to run on", default=5000)
-    parser.add_argument('--debug', help="Run app with debug=True")
     args = parser.parse_args()
 
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
         # load model:
         model = Doc2Vec.load(args.model_path)
-        application.run(host='0.0.0.0', debug=bool(args.debug), port=args.port)
+        application.run(host='0.0.0.0', port=int(args.port), debug=True)
