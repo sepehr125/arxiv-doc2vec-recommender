@@ -273,8 +273,6 @@ if __name__ == '__main__':
                 for fname in batch:
                     file_path = os.path.join(args.data_dir, fname)
                     values = get_fields(file_path)
-                    # try and except should be fast enough for most cases, 
-                    # unless there are a lot duplicates to skip.
                     try:
                         cur.execute(query_template, values)
                     except psycopg2.IntegrityError:

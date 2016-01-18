@@ -9,28 +9,23 @@ import argparse
 
 class DocIterator(object):
     """
-    gensim documentation calls this "streaming a corpus", which 
+    gensim documentation calls this "streaming a corpus", which
     lets us train without holding entire corpus in memory.
     It needs to be an object so gensim can make multiple passes over data.
-    
     Here, we stream from a postgres database.
     """
     def __init__(self, conn):
         self.conn = conn
 
     def __iter__(self):
-        """
-        Doc2Vec requires two passes over the data, so it is necessary
-        to create this iterator object that it can call twice.
-        """
         with conn.cursor(cursor_factory=DictCursor) as cur:
-            # TODO: save names of table and database 
+            # TODO: save names of table and database
             # to a central location. For now, db=arxive and table=articles
             cur.execute("SELECT * FROM articles;")
             for article in cur:
                 abstract = article['abstract'].replace('\n', ' ').strip()
                 # train on body, composed of title and abstract
-                body = article['title'] + '. ' 
+                body = article['title'] + '. '
                 body += abstract
                 # We want to keep some punctuation, as Word2Vec
                 # considers them useful context
@@ -38,7 +33,7 @@ class DocIterator(object):
                 # lowercase. perhaps lemmatize too?
                 words = [word.lower() for word in words]
                 # document tag. Unique integer 'index' is good.
-                # can also add topic tag of form 
+                # can also add topic tag of form
                 # 'topic_{subject_id}' to list
                 tags = [article['index']]
                 yield TaggedDocument(words, tags)
@@ -61,4 +56,3 @@ if __name__ == '__main__':
 
     model.save(args.path_to_model)
     print("Model can be found at %s"%args.path_to_model)
-    
