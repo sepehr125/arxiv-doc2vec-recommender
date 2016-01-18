@@ -82,11 +82,12 @@ ROUTES
 """
 
 @application.route('/')
-@application.route('/subjects/')
-@application.route('/subjects/<subject>')
+@application.route('/topics/')
+@application.route('/topics/<subject>')
 def browse_subjects(subject=None):
     """
-    Home page, list of subjects (currently the same thing)
+    Route for displaying home page, 
+    list of subjects (currently the same thing)
     or the list of articles by given subject
     """
     if subject is None:
