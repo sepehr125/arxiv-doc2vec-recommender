@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block main %}
+<h2 class="text-center">Topics, clustered by average vector similarity</h2>
   <svg style="width: 960px; height:900px" class="main"></svg>
 {% endblock %}
 
@@ -10,7 +11,7 @@
 <script type="text/javascript" src="{{ url_for('static', filename='jLouvain/jLouvain.js') }}"></script>
 <script>
 
-d3.csv("{{url_for('static', filename='subject_distances.csv')}}",function(error,data) {createNetwork(data)});
+d3.csv("{{csv_dest}}",function(error,data) {createNetwork(data)});
 
 function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;

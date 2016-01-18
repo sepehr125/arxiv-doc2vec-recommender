@@ -3,7 +3,7 @@
 {% block main %}
   <ol id="subjects">
     {% for subject, count in subjects %}
-      <li><a href="/subjects/{{subject}}">{{ subject }}</a> ({{count}})</li>
+      <li><a href="/topics/{{subject}}">{{ subject }}</a> ({{count}})</li>
     {% endfor %}
   </ol>
 {% endblock %}

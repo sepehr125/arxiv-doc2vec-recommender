@@ -2,9 +2,7 @@
 from operator import itemgetter
 import psycopg2
 from psycopg2.extras import DictCursor
-from flask import Flask
-from flask import render_template
-from flask import request
+from flask import Flask, render_template, request, url_for
 from gensim.models import Doc2Vec
 import re
 import argparse
@@ -108,9 +106,6 @@ def find_similars(main_article_id=None):
         article.extend([round(sim_score, 2)])
         sort_these.append(article)
 
-    # sort the list of dictionaries by value
-    # sorted_articles = sorted(sort_these, key=itemgetter('similarity'))
-
     return render_template("doc.html", main_article=main_article, sims=sort_these)
 
 @application.route('/search', methods=['POST'])
@@ -125,12 +120,23 @@ def search():
 
 @application.route('/analogy')
 def find_analogy():
-    like1 = request.args.get('like1', '')
-    like2 = request.args.get('like2', '')
-    likes = [word.lower() for word in [like1, like2] if word != '']
+    """
+    king - man + woman = queen
+    aka:
+    king:man :: queen:woman
 
-    unlike = request.args.get('unlike', '')
+    Here we expose a way to query our model
+    to find analogies.
+    As of right now, the analogies are not ready for prime time,
+    but the URL is up as an easter egg.
+    """
+    like1 = request.args.get('like1', '') # king
+    like2 = request.args.get('like2', '') # + woman
+    unlike = request.args.get('unlike', '') # - man
+
+    likes = [word.lower() for word in [like1, like2] if word != '']
     unlike = [word.lower() for word in list(unlike) if word not in ('', '#')]
+
     if not likes and not unlike:
         return render_template("analogy.html", analogies=[], error=False)
     try:
@@ -142,7 +148,21 @@ def find_analogy():
 
 @application.route('/viz')
 def viz():
-    return render_template("louvain.html")
+    """
+    If we think of similarity as a weight 
+    connecting articles and topics,
+    we have a weighted graph.
+    For topic modeling, a community detection
+    algorithm could be used on this weighted 
+    graph to identify and visualize clusters.
+    This is what the louvain template does for
+    topics.
+
+    I hope to expand this visualization to 
+    articles in each topic.
+    """
+    csv_dest = url_for('static', filename='subject_distances.csv')
+    return render_template("louvain.html", csv_dest=csv_dest)
 
 
 if __name__ == '__main__':
