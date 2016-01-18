@@ -123,7 +123,6 @@ function updateGraph(e) {
         .attr("y", -30)
     })
     .on("mouseout", function(d){
-      // d3.select(this).select("text").remove()
       d3.select(this).select("text").transition()
         .delay(100)
         .duration(200)

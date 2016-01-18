@@ -86,7 +86,8 @@ ROUTES
 @application.route('/subjects/<subject>')
 def browse_subjects(subject=None):
     """
-
+    Home page, list of subjects (currently the same thing)
+    or the list of articles by given subject
     """
     if subject is None:
         return render_template("browse.html", subjects=get_subjects())

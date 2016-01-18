@@ -30,6 +30,9 @@
         background: #02294A;
         margin-top: 20px;
       }
+      nav a, nav a:hover {
+        color: #fff;
+      }
       .copyright {
         color: #fff;
       }
@@ -46,13 +49,18 @@
           <span class="input-group-btn">
             <button class="btn btn-default" type="button">Search</button>
           </span>
+        </form>
+        <nav>
+        <ul class="list-inline">
+          <li><a href="/subjects">Browse Topics</a></li>
+          <li><a href="/viz">Visualize Topics</a></li>
+        </ul>
+        </nav>
       </div>
       {% block after_header %}{% endblock %}
-      <strong><a class="center text-center" href="/subjects">Browse</a></strong>
-      <strong><a class="center text-center" href="/viz">Visualize Topics</a></strong>
     </header>
-    <div class="container-fluid">
 
+    <div class="container-fluid">
       <main class="col-md-12">
         {% block main %}{% endblock %}
       </main>
