@@ -125,4 +125,4 @@ if __name__ == '__main__':
     with psycopg2.connect(dbname='arxiv') as conn:
         # load model:
         model = Doc2Vec.load(args.model_path)
-        application.run(host='0.0.0.0', debug=args.debug, port=args.port)
+        application.run(host='0.0.0.0', debug=bool(args.debug), port=args.port)
