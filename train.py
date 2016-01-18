@@ -35,7 +35,7 @@ class DocIterator(object):
                 # document tag. Unique integer 'index' is good.
                 # can also add topic tag of form
                 # 'topic_{subject_id}' to list
-                tags = [article['index']]
+                tags = [article['index'], article['subject']]
                 yield TaggedDocument(words, tags)
 
 

@@ -1,7 +1,6 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: osx-64
-appnope=0.1.0=py34_0
 backports_abc=0.4=py34_0
 decorator=4.0.6=py34_0
 flask=0.10.1=py34_1
@@ -37,7 +36,6 @@ pygments=2.0.2=py34_0
 pyqt=4.11.4=py34_1
 python=3.4.3=0
 python-dateutil=2.4.2=py34_0
-python.app=1.2=py34_4
 pytz=2015.7=py34_0
 pyzmq=15.2.0=py34_0
 qt=4.8.7=1
