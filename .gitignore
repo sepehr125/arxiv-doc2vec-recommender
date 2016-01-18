@@ -2,3 +2,7 @@ tmp/*
 EDA/*
 models/*
 static/subject_distances.csv
+sftp-config.json
+.DS_Store
+*.pyc
+.ipynb_checkpoints
