@@ -96,20 +96,10 @@ force = d3.layout.forceInABox()
   nodeEnter.append("text")
   .style("text-anchor", "middle")
   .attr("y", 3)
-  // .style("stroke-width", "1px")
-  // .style("stroke-opacity", 0.75)
-  // .style("stroke", "black")
   .style("font-size", "0px")
   .style("font-weight", "800")
   .text(function (d) {return d.name})
-  // .style("pointer-events", "none")
 
-  // nodeEnter.append("text")
-  // .style("text-anchor", "middle")
-  // .attr("y", 3)
-  // .style("font-size", "8px")
-  // .text(function (d) {return d.id})
-  // .style("pointer-events", "none")
 
   force.start();
 
@@ -145,24 +135,3 @@ function updateGraph(e) {
 }
 </script>
 {% endblock %}
-
-<!--     
-{#% for parent, children in subjects.items() %#}
-    <li class="parent">
-      {#% if children|length == 0 %#}
-      <a href="/?cat={{parent}}">
-      {#% endif %#}
-        {{ parent }}
-      {#% if children|length == 0 %#}
-      </a>
-      {#% endif %#}
-      </li>
-      {#% if children|length > 0 %#}
-        <ul class="children">
-          {#% for child in children %#}
-            <li><a href="/?cat={{parent}}%20{{child}}">{{ child }}</a></li>
-          {#% endfor %#}
-        </ul>
-      {#% endif %#}
-    {#% endfor %#}
- -->    

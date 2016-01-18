@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from operator import itemgetter
 import psycopg2
-import psycopg2.extras
+from psycopg2.extras import DictCursor
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -8,53 +9,66 @@ from gensim.models import Doc2Vec
 import re
 import argparse
 
-app = Flask(__name__)
+
+application = Flask(__name__)
 
 
 """Helpers"""
-def get_subjects():
+
+def subjects_counts():
+    """
+    Called by browse_subjects.
+
+    Returns: 
+        list: list sorted alphabetically,
+              containing tuples (subject, count),
+              where count is the number of articles in subject
+    """
     cur = conn.cursor()
-    query = "SELECT subject, count(*) FROM articles group by subject;"
-    cur.execute(query)
+    cur.execute("SELECT subject, COUNT(*) FROM articles GROUP BY subject;")
     subjects = sorted(cur.fetchall(), key=lambda tup:tup[0])
     return subjects
 
+
 def get_articles(indices):
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+    """
+
+    """
+    with conn.cursor(cursor_factory=DictCursor) as cur:
         query = cur.mogrify("SELECT * FROM articles WHERE index IN %s ORDER BY last_submitted DESC", (tuple(indices),))
         cur.execute(query)
         articles = cur.fetchall()
         return articles
 
 def get_articles_by_subject(subject):
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-        query = "SELECT * FROM articles WHERE subject='" + subject + "' ORDER BY last_submitted DESC"
-        cur.execute(query)
+    with conn.cursor(cursor_factory=DictCursor) as cur:
+        query = "SELECT * FROM articles WHERE subject=%s ORDER BY last_submitted DESC"
+        cur.execute(query, (subject,))
         articles = cur.fetchall()
         return articles
 
 def get_article(index):
-    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-        query = "SELECT * FROM articles WHERE index="+str(index)
-        cur.execute(query)
+    with conn.cursor(cursor_factory=DictCursor) as cur:
+        query = "SELECT * FROM articles WHERE index=%s"
+        cur.execute(query, (index, ))
         article = cur.fetchone()
         return article
 
-@app.route('/viz')
+@application.route('/viz')
 def viz():
     return render_template("louvain.html")
 
-@app.route('/')
-@app.route('/subjects/')
-@app.route('/subjects/<subject>')
+@application.route('/')
+@application.route('/subjects/')
+@application.route('/subjects/<subject>')
 def browse_subjects(subject=None):
     if subject is None:
-        return render_template("browse.html", subjects=get_subjects())
+        return render_template("browse.html", subjects=subjects_counts())
     else:
         articles = get_articles_by_subject(subject)
         return render_template("articles.html", articles=articles, subject=subject)
 
-@app.route('/article/<main_article_id>')
+@application.route('/article/<main_article_id>')
 def find_similars(main_article_id=None):
     main_article = get_article(main_article_id)
     sims = model.docvecs.most_similar(int(main_article_id), topn=10) # list of (id, similarity)
@@ -71,7 +85,7 @@ def find_similars(main_article_id=None):
 
     return render_template("doc.html", main_article=main_article, sims=sort_these)
 
-@app.route('/search', methods=['POST'])
+@application.route('/search', methods=['POST'])
 def search():
     if request.method == 'POST':
         query = request.form['search']
@@ -81,7 +95,7 @@ def search():
         results = get_articles(results)
         return render_template("search.html", articles=results)
 
-@app.route('/analogy')
+@application.route('/analogy')
 def find_analogy():
     like1 = request.args.get('like1', '')
     like2 = request.args.get('like2', '')
@@ -103,11 +117,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Fire up flask server with appropriate model')
     parser.add_argument('model_path', help="Name of model file")
+    parser.add_argument('port', help="Port to run on", default=5000)
+    parser.add_argument('--debug', help="Run app with debug=True")
     args = parser.parse_args()
-
-    # load model:
-    model = Doc2Vec.load(args.model_path)
 
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
-        app.run(host='0.0.0.0')
+        # load model:
+        model = Doc2Vec.load(args.model_path)
+        application.run(host='0.0.0.0', debug=args.debug, port=args.port)

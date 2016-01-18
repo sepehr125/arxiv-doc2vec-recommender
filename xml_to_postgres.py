@@ -55,9 +55,8 @@ worm in real time.
 
 
 def get_fields(file_path):
-    """
-    Calls helper functions below to 
-    gather fields into a tuple. 
+    """Calls helper functions below to
+    gather fields from XML file into a tuple. 
     This tuple is used as input to 
     PostgreSQL INSERT command later,
     which will take of any missing value problems.
@@ -96,9 +95,9 @@ def get_title(root):
         None: if no match is found
     """
     tag = '{http://purl.org/dc/elements/1.1/}title'
+    # .find() returns first instance.
     title = root.find(tag)
-    if title:
-        # calling .text on None raises error
+    if title.text:
         return title.text
 
 
@@ -116,7 +115,7 @@ def get_authors(root, sep='|'):
     tag = '{http://purl.org/dc/elements/1.1/}creator'
     authors = root.findall(tag)
     if authors:
-        # calling .text on None raises error
+        # TODO: switch this with a postgres array object...
         authors = sep.join([el.text for el in authors])
         return authors
 
@@ -132,8 +131,7 @@ def get_subject(root):
     """
     tag = '{http://purl.org/dc/elements/1.1/}subject'
     subject = root.find(tag)
-    if subject:
-        # calling .text on None raises error
+    if subject.text:
         return subject.text
 
 
@@ -260,6 +258,8 @@ if __name__ == '__main__':
             """
             batch_size = 1000
             batch_num = 1
+            # there's some way of using unnest here 
+            # that's probably faster
             query_template = """
                 INSERT INTO articles 
                 (title, authors, subject, abstract, last_submitted, arxiv_id) 
