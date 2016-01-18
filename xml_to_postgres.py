@@ -115,6 +115,7 @@ def get_authors(root, sep='|'):
     tag = '{http://purl.org/dc/elements/1.1/}creator'
     authors = root.findall(tag)
     if authors:
+        # TODO: switch this with a postgres array object...
         authors = sep.join([el.text for el in authors])
         return authors
 
