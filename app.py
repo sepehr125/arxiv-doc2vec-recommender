@@ -9,7 +9,7 @@ from gensim.models import Doc2Vec
 import re
 import argparse
 
-app = Flask(__name__)
+application = Flask(__name__)
 
 
 """Helpers"""
@@ -41,13 +41,13 @@ def get_article(index):
         article = cur.fetchone()
         return article
 
-@app.route('/viz')
+@application.route('/viz')
 def viz():
     return render_template("louvain.html")
 
-@app.route('/')
-@app.route('/subjects/')
-@app.route('/subjects/<subject>')
+@application.route('/')
+@application.route('/subjects/')
+@application.route('/subjects/<subject>')
 def browse_subjects(subject=None):
     if subject is None:
         return render_template("browse.html", subjects=get_subjects())
@@ -55,7 +55,7 @@ def browse_subjects(subject=None):
         articles = get_articles_by_subject(subject)
         return render_template("articles.html", articles=articles, subject=subject)
 
-@app.route('/article/<main_article_id>')
+@application.route('/article/<main_article_id>')
 def find_similars(main_article_id=None):
     main_article = get_article(main_article_id)
     sims = model.docvecs.most_similar(int(main_article_id), topn=10) # list of (id, similarity)
@@ -72,7 +72,7 @@ def find_similars(main_article_id=None):
 
     return render_template("doc.html", main_article=main_article, sims=sort_these)
 
-@app.route('/search', methods=['POST'])
+@application.route('/search', methods=['POST'])
 def search():
     if request.method == 'POST':
         query = request.form['search']
@@ -82,7 +82,7 @@ def search():
         results = get_articles(results)
         return render_template("search.html", articles=results)
 
-@app.route('/analogy')
+@application.route('/analogy')
 def find_analogy():
     like1 = request.args.get('like1', '')
     like2 = request.args.get('like2', '')
@@ -111,4 +111,4 @@ if __name__ == '__main__':
 
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
-        app.run(host='0.0.0.0', debug=True)
+        application.run(host='0.0.0.0', debug=True)

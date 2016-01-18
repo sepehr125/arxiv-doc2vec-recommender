@@ -17,7 +17,6 @@ with psycopg2.connect(dbname='arxiv') as conn:
         for article in cur:
             
             numtot += 1
-            pdf_url = "http://arxiv.org/pdf/%s.pdf"%article['arxiv_id']
             pdf_path = os.path.join('pdf', article['arxiv_id']) + '.pdf'
             
             # bail if file exists
@@ -25,6 +24,7 @@ with psycopg2.connect(dbname='arxiv') as conn:
                 print("File exists")
                 continue
             # bail if bad URL or no PDF:
+            pdf_url = "http://arxiv.org/pdf/%s.pdf"%article['arxiv_id']
             h = requests.head(pdf_url)
             if not any([h.status_code == 200, h.headers['Content-Type'] == 'application/pdf']):
                 print("Bad url on try %d"%numtot)
