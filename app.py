@@ -86,7 +86,7 @@ def find_analogy():
     like1 = request.args.get('like1', '')
     like2 = request.args.get('like2', '')
     likes = [word.lower() for word in [like1, like2] if word != '']
-    
+
     unlike = request.args.get('unlike', '')
     unlike = [word.lower() for word in list(unlike) if word not in ('', '#')]
     if not likes and not unlike:
@@ -100,7 +100,7 @@ def find_analogy():
 
 
 if __name__ == '__main__':
-    
+
     parser = argparse.ArgumentParser(description='Fire up flask server with appropriate model')
     parser.add_argument('model_path', help="Name of model file")
     args = parser.parse_args()
@@ -110,4 +110,4 @@ if __name__ == '__main__':
 
     # run app in db connection context
     with psycopg2.connect(dbname='arxiv') as conn:
-        app.run(host='0.0.0.0', debug=True)
+        app.run(host='0.0.0.0')
