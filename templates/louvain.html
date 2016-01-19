@@ -1,6 +1,13 @@
 {% extends "layout.html" %}
 
 {% block main %}
+{% if request.args.get('preview') == 'yes'  %}
+<style type="text/css">
+  header, footer, h2 {
+    display: none;
+  }
+</style>
+{% endif %}
 <h2 class="text-center">Topics, clustered by average vector similarity</h2>
   <svg style="width: 960px; height:900px" class="main"></svg>
 {% endblock %}

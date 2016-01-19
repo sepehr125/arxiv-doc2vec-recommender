@@ -177,4 +177,4 @@ if __name__ == '__main__':
         # load model:
         model = Doc2Vec.load(args.model_path)
         # appserver.run(host='0.0.0.0', port=int(args.port), debug=True)
-        appserver.run(host='0.0.0.0', port=80)
+        appserver.run(host='0.0.0.0', port=int(args.port))
