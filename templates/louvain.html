@@ -1,6 +1,13 @@
 {% extends "layout.html" %}
 
 {% block main %}
+{% if request.args.get('preview') == 'yes'  %}
+<style type="text/css">
+  header, footer, h2 {
+    display: none;
+  }
+</style>
+{% endif %}
 <h2 class="text-center">Topics, clustered by average vector similarity</h2>
   <svg style="width: 960px; height:900px" class="main"></svg>
 {% endblock %}
@@ -31,7 +38,7 @@ function createNetwork(edgelist) {
       nodeHash[edge.target] = {id: edge.target, label: edge.target, name:edge.target_name};
       nodes.push(nodeHash[edge.target]);
     }
-    if (edge.weight == 2) {
+    if (edge.weight == 
       edges.push({id: nodeHash[edge.source].id + "-" + nodeHash[edge.target].id, source: nodeHash[edge.source], target: nodeHash[edge.target], weight: edge.weight});
     }
   });

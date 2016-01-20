@@ -17,7 +17,7 @@ def get_subjects():
             (subject name, count)
             where count is the number of articles in subject,
             ordered alphabetically by subject name
-    
+
     Called by browse_subjects()
     """
     cur = conn.cursor()
@@ -45,7 +45,7 @@ def get_articles(indices):
 
 def get_articles_by_subject(subject):
     """
-    INPUT: 
+    INPUT:
         (str): subject name
 
     OUTPUT: list of dictionaries, each dictionary
@@ -62,11 +62,11 @@ def get_articles_by_subject(subject):
 
 def get_article(index):
     """
-    INPUT: 
+    INPUT:
         (int): article index
 
-    OUTPUT: 
-        (dict): dictionary object representing 
+    OUTPUT:
+        (dict): dictionary object representing
             article matching the given index
     """
     with conn.cursor(cursor_factory=DictCursor) as cur:
@@ -84,7 +84,7 @@ ROUTES
 @appserver.route('/topics/<subject>')
 def browse_subjects(subject=None):
     """
-    Route for displaying home page, 
+    Route for displaying home page,
     list of subjects (currently the same thing)
     or the list of articles by given subject
     """
@@ -149,16 +149,16 @@ def find_analogy():
 @appserver.route('/viz')
 def viz():
     """
-    If we think of similarity as a weight 
+    If we think of similarity as a weight
     connecting articles and topics,
     we have a weighted graph.
     For topic modeling, a community detection
-    algorithm could be used on this weighted 
+    algorithm could be used on this weighted
     graph to identify and visualize clusters.
     This is what the louvain template does for
     topics.
 
-    I hope to expand this visualization to 
+    I hope to expand this visualization to
     articles in each topic.
     """
     csv_dest = url_for('static', filename='subject_distances.csv')
@@ -177,4 +177,4 @@ if __name__ == '__main__':
         # load model:
         model = Doc2Vec.load(args.model_path)
         # appserver.run(host='0.0.0.0', port=int(args.port), debug=True)
-        appserver.run(host='0.0.0.0', port=80)
+        appserver.run(host='0.0.0.0', port=int(args.port))
