@@ -51,10 +51,10 @@ if __name__ == '__main__':
     n_cpus = multiprocessing.cpu_count()
     with psycopg2.connect(dbname=args.dbname) as conn:
         doc_iterator = DocIterator(conn)
-        model = Doc2Vec(documents=doc_iterator,
+        model = Doc2Vec(
+            documents=doc_iterator,
             workers=n_cpus,
-
-            )
+            size=100)
 
     model.save(args.path_to_model)
     print("Model can be found at %s"%args.path_to_model)
