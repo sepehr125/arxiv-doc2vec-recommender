@@ -38,7 +38,7 @@ function createNetwork(edgelist) {
       nodeHash[edge.target] = {id: edge.target, label: edge.target, name:edge.target_name};
       nodes.push(nodeHash[edge.target]);
     }
-    if (edge.weight == 
+    if (edge.weight == 2) {
       edges.push({id: nodeHash[edge.source].id + "-" + nodeHash[edge.target].id, source: nodeHash[edge.source], target: nodeHash[edge.target], weight: edge.weight});
     }
   });
