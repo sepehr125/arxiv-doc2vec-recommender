@@ -18,8 +18,3 @@ Additionally, the cosine similarity between texts tends to reveal semantic simil
 
 ## How SciExplorer works
 SciExporer's engine utilizes Word2Vec and Doc2Vec, which produce word and document vectors via a simple, 2-level neural network that trains on raw text, analyzing words in their local context. 
-
-
-
-
-[1] See this recent meta-analysis in _Nature_: ("Interdisciplinary research by the numbers") [http://www.nature.com/news/interdisciplinary-research-by-the-numbers-1.18349]
