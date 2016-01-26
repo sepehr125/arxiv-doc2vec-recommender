@@ -4,7 +4,7 @@ A document similarity engine for discovering related scientifc articles using di
 
 A serendipitous find was that the network of documents and the similarity between them form a weighted graph. I used a community detection algorithm on this weighted graph to visualize the relationship between topics (whose vectors were calculated by simply averaging their document vector). 
 
-<iframe src="http://52.90.165.201:5000/viz?preview=yes"></iframe>
+<a href="http://52.90.165.201:5000/viz?preview=yes"><img src='http://sepehr.xyz/img/viz_labeled.png' /></a>
 
 
 ## Motivation
